@@ -1,4 +1,4 @@
-package com.zerogram.ui.theme
+package com.zerogram.core.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

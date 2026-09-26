@@ -114,19 +114,19 @@ class CryptoManager @Inject constructor() {
             AppResult.Success(Unit)
         } catch (e: java.security.GeneralSecurityException) {
             try { outputStream.close() } catch (ignored: Exception) {}
-            com.example.zerogram.core.logging.SecureLogger.e("CryptoManager", "Decryption failed: wrong key or corrupted data", e)
+            com.zerogram.core.logging.SecureLogger.e("CryptoManager", "Decryption failed: wrong key or corrupted data", e)
             AppResult.Failure(AppError.UnknownError("Incorrect vault key, or the downloaded backup is corrupted."))
         } catch (e: java.io.FileNotFoundException) {
             try { outputStream.close() } catch (ignored: Exception) {}
-            com.example.zerogram.core.logging.SecureLogger.e("CryptoManager", "Decryption failed: File not found", e)
+            com.zerogram.core.logging.SecureLogger.e("CryptoManager", "Decryption failed: File not found", e)
             AppResult.Failure(AppError.UnknownError("File not found or permission denied: ${e.message}"))
         } catch (e: java.io.IOException) {
             try { outputStream.close() } catch (ignored: Exception) {}
-            com.example.zerogram.core.logging.SecureLogger.e("CryptoManager", "Decryption failed: IO or stream error (likely wrong key)", e)
+            com.zerogram.core.logging.SecureLogger.e("CryptoManager", "Decryption failed: IO or stream error (likely wrong key)", e)
             AppResult.Failure(AppError.UnknownError("Incorrect vault key, or the downloaded backup is corrupted."))
         } catch (e: Exception) {
             try { outputStream.close() } catch (ignored: Exception) {}
-            com.example.zerogram.core.logging.SecureLogger.e("CryptoManager", "Decryption failed", e)
+            com.zerogram.core.logging.SecureLogger.e("CryptoManager", "Decryption failed", e)
             AppResult.Failure(AppError.UnknownError("Decryption failed: ${e.message}"))
         }
     }
@@ -136,7 +136,7 @@ class CryptoManager @Inject constructor() {
             val fos = FileOutputStream(outputFile)
             decryptStream(inputFile, fos, key)
         } catch (e: Exception) {
-            com.example.zerogram.core.logging.SecureLogger.e("CryptoManager", "Decryption failed", e)
+            com.zerogram.core.logging.SecureLogger.e("CryptoManager", "Decryption failed", e)
             AppResult.Failure(AppError.UnknownError("Decryption failed: ${e.message}"))
         }
     }

@@ -8,6 +8,7 @@ import android.widget.ImageView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.activity.SystemBarStyle
 import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -28,6 +29,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.height
@@ -37,6 +39,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
@@ -47,16 +50,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.zerogram.navigation.NavigationRoutes
-import com.zerogram.ui.category.CategoryScreen
-import com.zerogram.ui.folder.FolderScreen
-import com.zerogram.ui.folder.RecentlyDeletedScreen
-import com.zerogram.ui.home.HomeScreen
-import com.zerogram.ui.login.LoginScreen
-import com.zerogram.ui.search.SearchScreen
-import com.zerogram.ui.theme.ZerogramTheme
-import com.zerogram.ui.vault.VaultCreateScreen
-import com.zerogram.ui.vault.VaultSelectionScreen
-import com.zerogram.ui.vault.VaultUnlockScreen
+import com.zerogram.feature.category.CategoryScreen
+import com.zerogram.feature.folder.FolderScreen
+import com.zerogram.feature.folder.RecentlyDeletedScreen
+import com.zerogram.feature.home.HomeScreen
+import com.zerogram.feature.login.LoginScreen
+import com.zerogram.feature.search.SearchScreen
+import com.zerogram.core.ui.theme.ZerogramTheme
+import com.zerogram.feature.vault.VaultCreateScreen
+import com.zerogram.feature.vault.VaultSelectionScreen
+import com.zerogram.feature.vault.VaultUnlockScreen
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
@@ -66,16 +69,10 @@ import androidx.compose.runtime.compositionLocalOf
 import dagger.hilt.android.AndroidEntryPoint
 import java.net.URLDecoder
 import java.net.URLEncoder
-import androidx.compose.ui.geometry.Rect
-
-@OptIn(ExperimentalSharedTransitionApi::class)
-val LocalSharedTransitionScope = compositionLocalOf<SharedTransitionScope?> { null }
-
-@OptIn(ExperimentalSharedTransitionApi::class)
-val LocalAnimatedVisibilityScope = compositionLocalOf<AnimatedVisibilityScope?> { null }
-
-/** Cached animation spec for shared bounds transitions — avoids allocating a new tween on every recomposition. */
-val SharedBoundsAnimSpec: FiniteAnimationSpec<Rect> = tween(350, easing = FastOutSlowInEasing)
+import com.zerogram.core.ui.navigation.LocalAnimatedVisibilityScope
+import com.zerogram.core.ui.navigation.LocalSharedTransitionScope
+import com.zerogram.core.ui.navigation.SharedBoundsAnimSpec
+import com.zerogram.core.ui.scaffold.AppScaffold
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -98,7 +95,12 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+        
+        splashScreen.setKeepOnScreenCondition {
+            viewModel.startDestination.value == null
+        }
         enableEdgeToEdge(
             navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
         )
@@ -135,35 +137,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = Color.Black
                 ) {
-                    // Only initialize the NavHost once startDestination is resolved
-                    if (startDestination == null) {
-                        Box(
-                            modifier = Modifier.fillMaxSize().background(Color.Black),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                AndroidView(
-                                    factory = { context ->
-                                        ImageView(context).apply {
-                                            layoutParams = ViewGroup.LayoutParams(
-                                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                                ViewGroup.LayoutParams.MATCH_PARENT
-                                            )
-                                            setImageResource(R.drawable.ic_zerogram_animated)
-                                            (drawable as? AnimatedVectorDrawable)?.start()
-                                        }
-                                    },
-                                    modifier = Modifier.size(120.dp)
-                                )
-                                Spacer(modifier = Modifier.height(24.dp))
-                                CircularProgressIndicator(
-                                    color = Color(0xFF2B65F6)
-                                )
-                            }
-                        }
-                    } else {
+                    if (startDestination != null) {
                         androidx.compose.runtime.key(startDestination) {
                             val navController = rememberNavController()
                             
@@ -181,9 +155,11 @@ class MainActivity : ComponentActivity() {
                             CompositionLocalProvider(
                                 LocalSharedTransitionScope provides this@SharedTransitionLayout
                             ) {
-                                NavHost(
-                                    navController = navController,
-                                    startDestination = if (startDestination == "Home") NavigationRoutes.HOME else NavigationRoutes.LOGIN,
+                                AppScaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                                    NavHost(
+                                        modifier = Modifier.padding(innerPadding).consumeWindowInsets(innerPadding),
+                                        navController = navController,
+                                        startDestination = if (startDestination == "Home") NavigationRoutes.HOME else NavigationRoutes.LOGIN,
                                     enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(250, easing = LinearOutSlowInEasing)) },
                                     exitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(250, easing = FastOutLinearInEasing)) },
                                     popEnterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(250, easing = LinearOutSlowInEasing)) },
@@ -369,7 +345,8 @@ class MainActivity : ComponentActivity() {
                                     onNavigateBack = { navController.popBackStack() }
                                 )
                             }
-                            } // end NavHost
+                                } // end NavHost
+                                } // end AppScaffold
                             } // end CompositionLocalProvider
                             } // end SharedTransitionLayout
                         } // end key(startDestination)

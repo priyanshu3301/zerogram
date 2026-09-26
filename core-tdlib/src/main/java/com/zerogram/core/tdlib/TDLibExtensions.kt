@@ -1,7 +1,7 @@
-package com.example.zerogram.telegram
+package com.zerogram.core.tdlib
 
-import com.example.zerogram.domain.model.AppError
-import com.example.zerogram.domain.model.AppResult
+import com.zerogram.domain.model.AppError
+import com.zerogram.domain.model.AppResult
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.drinkless.tdlib.Client
 import org.drinkless.tdlib.TdApi

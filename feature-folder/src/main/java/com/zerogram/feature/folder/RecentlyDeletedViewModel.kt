@@ -1,8 +1,11 @@
-package com.example.zerogram.ui.folder
+package com.zerogram.feature.folder
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.zerogram.data.local.ZerogramDatabase
+import com.zerogram.data.local.ZerogramDatabase
+import com.zerogram.core.ui.components.AppListItem
+import com.zerogram.core.ui.components.SelectionDetails
+import com.zerogram.core.ui.components.SortOrder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,17 +18,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class DeletedItemData(
-    val id: String,
-    val name: String,
-    val dateText: String, // e.g. "12 September"
-    val sizeText: String, // e.g. "1 item" or "189 KB"
-    val iconRes: Int,
-    val isFolder: Boolean,
-    val deletedAt: Long,
-    val sizeBytes: Long
-)
-
 @HiltViewModel
 class RecentlyDeletedViewModel @Inject constructor(
     private val database: ZerogramDatabase
@@ -36,17 +28,17 @@ class RecentlyDeletedViewModel @Inject constructor(
     private val _searchQuery = kotlinx.coroutines.flow.MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
 
-    private val _sortOrder = kotlinx.coroutines.flow.MutableStateFlow(com.example.zerogram.ui.search.SortOrder.NEWEST_FIRST)
-    val sortOrder: StateFlow<com.example.zerogram.ui.search.SortOrder> = _sortOrder
+    private val _sortOrder = kotlinx.coroutines.flow.MutableStateFlow(SortOrder.NEWEST_FIRST)
+    val sortOrder: StateFlow<SortOrder> = _sortOrder
 
-    val deletedItems: StateFlow<List<DeletedItemData>> = combine(
+    val deletedItems: StateFlow<List<AppListItem>> = combine(
         database.folderDao().getDeletedFoldersWithCount(),
         database.fileDao().getDeletedFiles(),
         _searchQuery,
         _sortOrder
     ) { folders, files, query, sort ->
         val currentTime = System.currentTimeMillis()
-        val items = mutableListOf<DeletedItemData>()
+        val items = mutableListOf<AppListItem>()
 
         val foldersToDelete = mutableListOf<String>()
         val filesToDelete = mutableListOf<String>()
@@ -59,15 +51,12 @@ class RecentlyDeletedViewModel @Inject constructor(
             } else {
                 val sizeText = if (folder.itemCount == 1) "1 item" else "${folder.itemCount} items"
                 items.add(
-                    DeletedItemData(
+                    AppListItem.Folder(
                         id = folder.id,
                         name = folder.name,
                         dateText = dateFormat.format(java.util.Date(folder.createdAt)),
-                        sizeText = sizeText,
-                        iconRes = com.example.zerogram.R.drawable.ic_file_folder_icon,
-                        isFolder = true,
-                        deletedAt = deletedAt,
-                        sizeBytes = 0L
+                        extraInfo = sizeText,
+                        iconRes = com.zerogram.core.ui.R.drawable.ic_file_folder_icon
                     )
                 )
             }
@@ -79,28 +68,26 @@ class RecentlyDeletedViewModel @Inject constructor(
                 filesToDelete.add(file.id)
             } else {
                 items.add(
-                    DeletedItemData(
+                    AppListItem.File(
                         id = file.id,
                         name = file.displayName,
                         dateText = dateFormat.format(java.util.Date(file.createdAt)),
-                        sizeText = com.example.zerogram.util.FormatUtils.formatSize(file.sizeBytes),
+                        sizeText = com.zerogram.util.FormatUtils.formatSize(file.sizeBytes),
                         iconRes = getIconForMimeType(file.mimeType),
-                        isFolder = false,
-                        deletedAt = deletedAt,
                         sizeBytes = file.sizeBytes
                     )
                 )
             }
         }
 
-        var result = items.filter { it.name.contains(query, ignoreCase = true) }
+        var result = items.filter { (if (it is AppListItem.Folder) it.name else (it as AppListItem.File).name).contains(query, ignoreCase = true) }
         
         result = when (sort) {
-            com.example.zerogram.ui.search.SortOrder.NEWEST_FIRST -> result.sortedByDescending { it.deletedAt }
-            com.example.zerogram.ui.search.SortOrder.NAME_A_Z -> result.sortedBy { it.name.lowercase() }
-            com.example.zerogram.ui.search.SortOrder.NAME_Z_A -> result.sortedByDescending { it.name.lowercase() }
-            com.example.zerogram.ui.search.SortOrder.LARGEST_FIRST -> result.sortedWith(compareByDescending<DeletedItemData> { !it.isFolder }.thenByDescending { it.sizeBytes })
-            com.example.zerogram.ui.search.SortOrder.SMALLEST_FIRST -> result.sortedWith(compareByDescending<DeletedItemData> { !it.isFolder }.thenBy { it.sizeBytes })
+            SortOrder.NEWEST_FIRST -> result
+            SortOrder.NAME_A_Z -> result.sortedBy { (if (it is AppListItem.Folder) it.name else (it as AppListItem.File).name).lowercase() }
+            SortOrder.NAME_Z_A -> result.sortedByDescending { (if (it is AppListItem.Folder) it.name else (it as AppListItem.File).name).lowercase() }
+            SortOrder.LARGEST_FIRST -> result.sortedWith(compareByDescending<AppListItem> { it is AppListItem.File }.thenByDescending { if (it is AppListItem.File) it.sizeBytes else 0L })
+            SortOrder.SMALLEST_FIRST -> result.sortedWith(compareByDescending<AppListItem> { it is AppListItem.File }.thenBy { if (it is AppListItem.File) it.sizeBytes else 0L })
         }
         
         result
@@ -110,11 +97,9 @@ class RecentlyDeletedViewModel @Inject constructor(
         _searchQuery.value = query
     }
 
-    fun setSortOrder(order: com.example.zerogram.ui.search.SortOrder) {
+    fun setSortOrder(order: SortOrder) {
         _sortOrder.value = order
     }
-
-
 
     private val _selectedItems = kotlinx.coroutines.flow.MutableStateFlow<Set<String>>(emptySet())
     val selectedItems: StateFlow<Set<String>> = _selectedItems
@@ -137,8 +122,8 @@ class RecentlyDeletedViewModel @Inject constructor(
         val ids = _selectedItems.value.toList()
         if (ids.isEmpty()) return
         viewModelScope.launch {
-            val foldersToRecover = deletedItems.value.filter { it.isFolder && it.id in ids }.map { it.id }
-            val filesToRecover = deletedItems.value.filter { !it.isFolder && it.id in ids }.map { it.id }
+            val foldersToRecover = deletedItems.value.filter { it is AppListItem.Folder && it.id in ids }.map { it.id }
+            val filesToRecover = deletedItems.value.filter { it is AppListItem.File && it.id in ids }.map { it.id }
 
             if (foldersToRecover.isNotEmpty()) database.folderDao().recoverFolders(foldersToRecover)
             if (filesToRecover.isNotEmpty()) database.fileDao().recoverFiles(filesToRecover)
@@ -151,8 +136,8 @@ class RecentlyDeletedViewModel @Inject constructor(
         val ids = _selectedItems.value.toList()
         if (ids.isEmpty()) return
         viewModelScope.launch {
-            val foldersToDelete = deletedItems.value.filter { it.isFolder && it.id in ids }.map { it.id }
-            val filesToDelete = deletedItems.value.filter { !it.isFolder && it.id in ids }.map { it.id }
+            val foldersToDelete = deletedItems.value.filter { it is AppListItem.Folder && it.id in ids }.map { it.id }
+            val filesToDelete = deletedItems.value.filter { it is AppListItem.File && it.id in ids }.map { it.id }
 
             if (foldersToDelete.isNotEmpty()) database.folderDao().deleteFoldersPermanently(foldersToDelete)
             if (filesToDelete.isNotEmpty()) database.fileDao().deleteFilesPermanently(filesToDelete)
@@ -163,13 +148,13 @@ class RecentlyDeletedViewModel @Inject constructor(
 
     fun getIconForMimeType(mimeType: String): Int {
         return when {
-            mimeType.startsWith("image/") -> com.example.zerogram.R.drawable.ic_category_pic
-            mimeType.startsWith("video/") -> com.example.zerogram.R.drawable.ic_category_video
-            mimeType.startsWith("audio/") -> com.example.zerogram.R.drawable.ic_category_audio
-            mimeType.contains("pdf") || mimeType.contains("document") -> com.example.zerogram.R.drawable.ic_category_doc
-            mimeType.contains("zip") || mimeType.contains("rar") -> com.example.zerogram.R.drawable.ic_category_archive
-            mimeType.contains("android.package-archive") -> com.example.zerogram.R.drawable.ic_category_apk
-            else -> com.example.zerogram.R.drawable.ic_category_doc
+            mimeType.startsWith("image/") -> com.zerogram.core.ui.R.drawable.ic_category_pic
+            mimeType.startsWith("video/") -> com.zerogram.core.ui.R.drawable.ic_category_video
+            mimeType.startsWith("audio/") -> com.zerogram.core.ui.R.drawable.ic_category_audio
+            mimeType.contains("pdf") || mimeType.contains("document") -> com.zerogram.core.ui.R.drawable.ic_category_doc
+            mimeType.contains("zip") || mimeType.contains("rar") -> com.zerogram.core.ui.R.drawable.ic_category_archive
+            mimeType.contains("android.package-archive") -> com.zerogram.core.ui.R.drawable.ic_category_apk
+            else -> com.zerogram.core.ui.R.drawable.ic_category_doc
         }
     }
 
@@ -199,7 +184,7 @@ class RecentlyDeletedViewModel @Inject constructor(
             
             if (selectedIds.size == 1) {
                 val item = selectedFilesAndFolders.first()
-                if (item.isFolder) {
+                if (item is AppListItem.Folder) {
                     val folderEntity = database.folderDao().getFolderById(item.id)
                     val stats = database.folderDao().getFolderSubtreeStats(item.id)
                     val itemsText = buildString {
@@ -216,15 +201,15 @@ class RecentlyDeletedViewModel @Inject constructor(
                             isMultiple = false,
                             name = item.name,
                             dateModified = formattedDate,
-                            sizeText = com.example.zerogram.util.FormatUtils.formatSize(stats.totalSize),
+                            sizeText = com.zerogram.util.FormatUtils.formatSize(stats.totalSize),
                             location = locationStr,
                             itemsText = itemsText
                         )
                     )
-                } else {
+                } else if (item is AppListItem.File) {
                     val fileEntity = database.fileDao().getFileById(item.id)
                     val formattedDate = fileEntity?.let { dateFormat.format(java.util.Date(it.createdAt)).lowercase(java.util.Locale.getDefault()) } ?: item.dateText
-                    val formattedSize = fileEntity?.sizeBytes?.let { com.example.zerogram.util.FormatUtils.formatSize(it) } ?: item.sizeText
+                    val formattedSize = fileEntity?.sizeBytes?.let { com.zerogram.util.FormatUtils.formatSize(it) } ?: item.sizeText
                     onResult(
                         SelectionDetails(
                             title = "Details",
@@ -242,7 +227,7 @@ class RecentlyDeletedViewModel @Inject constructor(
                 var totalFolders = 0
                 var totalFiles = 0
                 
-                val folderIds = selectedFilesAndFolders.filter { it.isFolder }.map { it.id }
+                val folderIds = selectedFilesAndFolders.filterIsInstance<AppListItem.Folder>().map { it.id }
                 if (folderIds.isNotEmpty()) {
                     totalFolders += folderIds.size
                     val stats = database.folderDao().getAggregateFolderSubtreeStats(folderIds)
@@ -252,7 +237,7 @@ class RecentlyDeletedViewModel @Inject constructor(
                 }
 
                 for (item in selectedFilesAndFolders) {
-                    if (!item.isFolder) {
+                    if (item is AppListItem.File) {
                         totalFiles++
                         totalSize += item.sizeBytes
                     }
@@ -268,7 +253,7 @@ class RecentlyDeletedViewModel @Inject constructor(
                     SelectionDetails(
                         title = "Details",
                         isMultiple = true,
-                        sizeText = com.example.zerogram.util.FormatUtils.formatSize(totalSize),
+                        sizeText = com.zerogram.util.FormatUtils.formatSize(totalSize),
                         itemsText = itemsText
                     )
                 )

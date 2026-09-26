@@ -1,13 +1,14 @@
-package com.example.zerogram.ui.category
+package com.zerogram.feature.category
 
 import android.content.Context
 import android.os.Environment
 import androidx.lifecycle.ViewModel
+import com.zerogram.core.ui.components.SortOrder
+import com.zerogram.core.ui.components.SelectionDetails
 import androidx.lifecycle.viewModelScope
-import com.example.zerogram.data.local.ZerogramDatabase
-import com.example.zerogram.data.local.entity.TransferJobEntity
-import com.example.zerogram.ui.folder.FileItemData
-import com.example.zerogram.ui.folder.SelectionDetails
+import com.zerogram.data.local.ZerogramDatabase
+import com.zerogram.data.local.entity.TransferJobEntity
+import com.zerogram.core.ui.components.AppListItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,11 +30,9 @@ import java.util.Locale
 import java.util.UUID
 import java.io.File
 import javax.inject.Inject
-import com.example.zerogram.R
-import com.example.zerogram.core.utils.FileOpener
-import com.example.zerogram.service.TransferService
-import com.example.zerogram.ui.search.SortOrder
-import com.example.zerogram.util.FormatUtils
+import com.zerogram.core.ui.R
+import com.zerogram.core.ui.utils.FileOpener
+import com.zerogram.util.FormatUtils
 import kotlinx.coroutines.Dispatchers
 
 @HiltViewModel
@@ -60,37 +59,36 @@ class CategoryViewModel @Inject constructor(
         _categoryName.value = category
     }
 
-    val filesAndFolders: StateFlow<List<FileItemData>> = combine(
+    val filesAndFolders: StateFlow<List<AppListItem>> = combine(
         _categoryName.flatMapLatest { category -> database.fileDao().getFilesByCategory(category) },
         _searchQuery,
         _sortOrder
     ) { files, query, sort ->
-        val items = mutableListOf<FileItemData>()
+        val items = mutableListOf<AppListItem>()
         val dateFormat = SimpleDateFormat("d MMM yyyy", Locale.getDefault())
 
         files.forEach { file ->
             items.add(
-                FileItemData(
-                    id = file.id,
-                    name = file.displayName,
-                    date = dateFormat.format(Date(file.createdAt)),
-                    size = FormatUtils.formatSize(file.sizeBytes),
-                    iconRes = getIconForMimeType(file.mimeType),
-                    isFolder = false,
-                    timestamp = file.createdAt,
-                    sizeBytes = file.sizeBytes
+                    AppListItem.File(
+                        id = file.id,
+                        name = file.displayName,
+                        dateText = dateFormat.format(Date(file.createdAt)),
+                        sizeText = FormatUtils.formatSize(file.sizeBytes),
+                        iconRes = getIconForMimeType(file.mimeType),
+                        timestamp = file.createdAt,
+                        sizeBytes = file.sizeBytes
+                    )
                 )
-            )
         }
         
         var result = items.filter { it.name.contains(query, ignoreCase = true) }
         
         result = when (sort) {
             SortOrder.NEWEST_FIRST -> result.sortedByDescending { it.timestamp }
-            SortOrder.NAME_A_Z -> result.sortedBy { it.name.lowercase() }
-            SortOrder.NAME_Z_A -> result.sortedByDescending { it.name.lowercase() }
-            SortOrder.LARGEST_FIRST -> result.sortedByDescending { it.sizeBytes }
-            SortOrder.SMALLEST_FIRST -> result.sortedBy { it.sizeBytes }
+                SortOrder.NAME_A_Z -> result.sortedBy { it.name.lowercase() }
+                SortOrder.NAME_Z_A -> result.sortedByDescending { it.name.lowercase() }
+                SortOrder.LARGEST_FIRST -> result.sortedByDescending { it.sizeBytes }
+                SortOrder.SMALLEST_FIRST -> result.sortedBy { it.sizeBytes }
         }
         
         result
@@ -204,7 +202,12 @@ class CategoryViewModel @Inject constructor(
                         updatedAt = now
                     )
                     database.transferJobDao().insertJob(jobEntity)
-                    TransferService.startService(context)
+                    val intent = android.content.Intent().apply { setClassName(context.packageName, "com.zerogram.service.TransferService") }
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
                     _uiEvents.emit("Download started for ${fileEntity.displayName}")
                 } else {
                     _uiEvents.emit("Already downloading ${fileEntity.displayName}")
@@ -213,7 +216,7 @@ class CategoryViewModel @Inject constructor(
         }
     }
 
-    fun getSelectionDetails(onResult: (SelectionDetails) -> Unit) {
+    fun getSelectionDetails(onResult: (com.zerogram.core.ui.components.SelectionDetails) -> Unit) {
         viewModelScope.launch {
             val selectedIds = _selectedItems.value.toList()
             if (selectedIds.isEmpty()) return@launch
@@ -225,8 +228,10 @@ class CategoryViewModel @Inject constructor(
             if (selectedIds.size == 1) {
                 val item = selectedFilesAndFolders.first()
                 val fileEntity = database.fileDao().getFileById(item.id)
-                val formattedDate = fileEntity?.let { dateFormat.format(Date(it.createdAt)).lowercase(Locale.getDefault()) } ?: item.date
-                val formattedSize = fileEntity?.sizeBytes?.let { FormatUtils.formatSize(it) } ?: item.size
+                val itemDateText = if (item is AppListItem.File) item.dateText else (item as AppListItem.Folder).dateText
+            val itemSizeText = if (item is AppListItem.File) item.sizeText else ""
+            val formattedDate = fileEntity?.let { dateFormat.format(java.util.Date(it.createdAt)).lowercase(java.util.Locale.getDefault()) } ?: itemDateText
+            val formattedSize = fileEntity?.sizeBytes?.let { FormatUtils.formatSize(it) } ?: itemSizeText
                 
                 // For categories, we might not know the exact path easily, just show category
                 val locationStr = "Category: ${_categoryName.value}"

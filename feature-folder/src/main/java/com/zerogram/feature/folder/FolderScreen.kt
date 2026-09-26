@@ -1,4 +1,4 @@
-package com.example.zerogram.ui.folder
+package com.zerogram.feature.folder
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -22,8 +22,11 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import com.example.zerogram.ui.components.AppDropdownMenu
-import com.example.zerogram.ui.components.AppDropdownMenuItem
+import com.zerogram.core.ui.components.AppDropdownMenu
+import com.zerogram.core.ui.components.AppDropdownMenuItem
+import com.zerogram.core.ui.components.AppList
+import com.zerogram.core.ui.components.ImmutableListWrapper
+import com.zerogram.core.ui.components.AppListItem
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.runtime.Immutable
@@ -42,13 +45,14 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.BackHandler
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.zerogram.R
-import com.example.zerogram.ui.search.SortOrder
-import com.example.zerogram.LocalSharedTransitionScope
-import com.example.zerogram.LocalAnimatedVisibilityScope
+import com.zerogram.core.ui.R
+import com.zerogram.core.ui.components.SortOrder
+import com.zerogram.core.ui.components.SelectionDetails
+import com.zerogram.core.ui.navigation.LocalSharedTransitionScope
+import com.zerogram.core.ui.navigation.LocalAnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import com.example.zerogram.SharedBoundsAnimSpec
+import com.zerogram.core.ui.navigation.SharedBoundsAnimSpec
 
 // Dark Theme Colors matched to HomeScreen
 private val BackgroundColor = Color(0xFF000000)
@@ -57,17 +61,6 @@ private val TextPrimary = Color(0xFFFFFFFF)
 private val TextSecondary = Color(0xFFA0A0A0)
 private val DividerColor = Color(0xFF333333)
 
-@Immutable
-data class FileItemData(
-    val id: String,
-    val name: String,
-    val date: String,
-    val size: String,
-    val iconRes: Int,
-    val isFolder: Boolean = false,
-    val timestamp: Long = 0L,
-    val sizeBytes: Long = 0L
-)
 
 // dummyFiles removed
 
@@ -125,7 +118,7 @@ fun FolderScreen(
     var detailsData by remember { mutableStateOf<SelectionDetails?>(null) }
     
     var showRenameDialog by remember { mutableStateOf(false) }
-    var itemToRename by remember { mutableStateOf<FileItemData?>(null) }
+    var itemToRename by remember { mutableStateOf<AppListItem?>(null) }
 
     var showNativeFilePicker by remember { mutableStateOf(false) }
     var nativeFilePickerSelectFolder by remember { mutableStateOf(false) }
@@ -270,9 +263,9 @@ fun FolderScreen(
                                         text = { Text("Newest first", color = TextPrimary, fontSize = 18.sp) },
                                         onClick = { 
                                             showSortMenu = false
-                                            viewModel.setSortOrder(com.example.zerogram.ui.search.SortOrder.NEWEST_FIRST)
+                                            viewModel.setSortOrder(SortOrder.NEWEST_FIRST)
                                         },
-                                        trailingIcon = if (sortOrder == com.example.zerogram.ui.search.SortOrder.NEWEST_FIRST) { { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
+                                        trailingIcon = if (sortOrder == SortOrder.NEWEST_FIRST) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
                                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                     )
                                     HorizontalDivider(color = DividerColor, thickness = 1.dp)
@@ -280,9 +273,9 @@ fun FolderScreen(
                                         text = { Text("Name A-Z", color = TextPrimary, fontSize = 18.sp) },
                                         onClick = { 
                                             showSortMenu = false
-                                            viewModel.setSortOrder(com.example.zerogram.ui.search.SortOrder.NAME_A_Z)
+                                            viewModel.setSortOrder(SortOrder.NAME_A_Z)
                                         },
-                                        trailingIcon = if (sortOrder == com.example.zerogram.ui.search.SortOrder.NAME_A_Z) { { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
+                                        trailingIcon = if (sortOrder == SortOrder.NAME_A_Z) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
                                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                     )
                                     HorizontalDivider(color = DividerColor, thickness = 1.dp)
@@ -290,9 +283,9 @@ fun FolderScreen(
                                         text = { Text("Name Z-A", color = TextPrimary, fontSize = 18.sp) },
                                         onClick = { 
                                             showSortMenu = false
-                                            viewModel.setSortOrder(com.example.zerogram.ui.search.SortOrder.NAME_Z_A)
+                                            viewModel.setSortOrder(SortOrder.NAME_Z_A)
                                         },
-                                        trailingIcon = if (sortOrder == com.example.zerogram.ui.search.SortOrder.NAME_Z_A) { { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
+                                        trailingIcon = if (sortOrder == SortOrder.NAME_Z_A) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
                                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                     )
                                     HorizontalDivider(color = DividerColor, thickness = 1.dp)
@@ -300,9 +293,9 @@ fun FolderScreen(
                                         text = { Text("Largest first", color = TextPrimary, fontSize = 18.sp) },
                                         onClick = { 
                                             showSortMenu = false
-                                            viewModel.setSortOrder(com.example.zerogram.ui.search.SortOrder.LARGEST_FIRST)
+                                            viewModel.setSortOrder(SortOrder.LARGEST_FIRST)
                                         },
-                                        trailingIcon = if (sortOrder == com.example.zerogram.ui.search.SortOrder.LARGEST_FIRST) { { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
+                                        trailingIcon = if (sortOrder == SortOrder.LARGEST_FIRST) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
                                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                     )
                                     HorizontalDivider(color = DividerColor, thickness = 1.dp)
@@ -310,9 +303,9 @@ fun FolderScreen(
                                         text = { Text("Smallest first", color = TextPrimary, fontSize = 18.sp) },
                                         onClick = { 
                                             showSortMenu = false
-                                            viewModel.setSortOrder(com.example.zerogram.ui.search.SortOrder.SMALLEST_FIRST)
+                                            viewModel.setSortOrder(SortOrder.SMALLEST_FIRST)
                                         },
-                                        trailingIcon = if (sortOrder == com.example.zerogram.ui.search.SortOrder.SMALLEST_FIRST) { { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
+                                        trailingIcon = if (sortOrder == SortOrder.SMALLEST_FIRST) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
                                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                     )
                                 }
@@ -416,7 +409,7 @@ fun FolderScreen(
                                             showSortMenuNormal = false
                                             viewModel.setSortOrder(SortOrder.NEWEST_FIRST)
                                         },
-                                        trailingIcon = if (sortOrder == SortOrder.NEWEST_FIRST) { { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
+                                        trailingIcon = if (sortOrder == SortOrder.NEWEST_FIRST) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
                                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                     )
                                     HorizontalDivider(color = DividerColor, thickness = 1.dp)
@@ -426,7 +419,7 @@ fun FolderScreen(
                                             showSortMenuNormal = false
                                             viewModel.setSortOrder(SortOrder.NAME_A_Z)
                                         },
-                                        trailingIcon = if (sortOrder == SortOrder.NAME_A_Z) { { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
+                                        trailingIcon = if (sortOrder == SortOrder.NAME_A_Z) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
                                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                     )
                                     HorizontalDivider(color = DividerColor, thickness = 1.dp)
@@ -436,7 +429,7 @@ fun FolderScreen(
                                             showSortMenuNormal = false
                                             viewModel.setSortOrder(SortOrder.NAME_Z_A)
                                         },
-                                        trailingIcon = if (sortOrder == SortOrder.NAME_Z_A) { { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
+                                        trailingIcon = if (sortOrder == SortOrder.NAME_Z_A) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
                                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                     )
                                     HorizontalDivider(color = DividerColor, thickness = 1.dp)
@@ -446,7 +439,7 @@ fun FolderScreen(
                                             showSortMenuNormal = false
                                             viewModel.setSortOrder(SortOrder.LARGEST_FIRST)
                                         },
-                                        trailingIcon = if (sortOrder == SortOrder.LARGEST_FIRST) { { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
+                                        trailingIcon = if (sortOrder == SortOrder.LARGEST_FIRST) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
                                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                     )
                                     HorizontalDivider(color = DividerColor, thickness = 1.dp)
@@ -456,7 +449,7 @@ fun FolderScreen(
                                             showSortMenuNormal = false
                                             viewModel.setSortOrder(SortOrder.SMALLEST_FIRST)
                                         },
-                                        trailingIcon = if (sortOrder == SortOrder.SMALLEST_FIRST) { { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
+                                        trailingIcon = if (sortOrder == SortOrder.SMALLEST_FIRST) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
                                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                     )
                                 }
@@ -573,41 +566,29 @@ fun FolderScreen(
         }
     ) { paddingValues ->
         val displayItems = if (isTransitionFinished) filesAndFolders else emptyList()
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .then(listModifier)
-        ) {
-            items(
-                items = displayItems,
-                key = { it.id },
-                contentType = { if (it.isFolder) "folder" else "file" }
-            ) { file ->
-                FileListItem(
-                    file = file,
-                    modifier = Modifier.animateItem(),
-                    isSelected = selectedItems.contains(file.id),
-                    isSelectionMode = isSelectionMode,
-                    onClick = {
-                        if (isSelectionMode) {
-                            viewModel.toggleSelection(file.id)
-                        } else {
-                            if (!file.isFolder) {
-                                viewModel.onFileClicked(file.id)
-                            } else {
-                                viewModel.navigateToFolder(file.id, file.name)
-                            }
-                        }
-                    },
-                    onLongClick = {
-                        if (!isSelectionMode) {
-                            isSelectionMode = true
-                            viewModel.toggleSelection(file.id)
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues).then(listModifier)) {
+            AppList(
+                items = ImmutableListWrapper(displayItems),
+                selectedItems = selectedItems,
+                isSelectionMode = isSelectionMode,
+                onItemClick = { file ->
+                    if (isSelectionMode) {
+                        viewModel.toggleSelection(file.id)
+                    } else {
+                        if (file is AppListItem.File) {
+                            viewModel.onFileClicked(file.id)
+                        } else if (file is AppListItem.Folder) {
+                            viewModel.navigateToFolder(file.id, file.name)
                         }
                     }
-                )
-            }
+                },
+                onItemLongClick = { file ->
+                    if (!isSelectionMode) {
+                        isSelectionMode = true
+                        viewModel.toggleSelection(file.id)
+                    }
+                }
+            )
         }
     }
 
@@ -647,9 +628,12 @@ fun FolderScreen(
         )
     }
 
-    if (showDetailsDialog && detailsData != null) {
-        DetailsDialog(details = detailsData!!, onDismiss = { showDetailsDialog = false })
+    
+    val currentDetails = detailsData
+    if (showDetailsDialog && currentDetails != null) {
+        DetailsDialog(details = currentDetails, onDismiss = { showDetailsDialog = false })
     }
+
 
     if (showNewFolderDialog) {
         AlertDialog(
@@ -766,106 +750,9 @@ fun BottomBarAction(iconRes: Int, label: String, enabled: Boolean = true, onClic
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun FileListItem(
-    file: FileItemData,
-    modifier: Modifier = Modifier,
-    isSelected: Boolean = false,
-    isSelectionMode: Boolean = false,
-    onClick: () -> Unit,
-    onLongClick: () -> Unit = {}
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(if (isSelected) Color(0xFF1A1A1A) else Color.Transparent)
-            .combinedClickable(
-                indication = ripple(color = TextSecondary),
-                interactionSource = null,
-                onClick = onClick,
-                onLongClick = onLongClick
-            )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // File Icon
-            Icon(
-                painter = painterResource(id = file.iconRes),
-                contentDescription = file.name,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(44.dp)
-            )
-            
-            Spacer(modifier = Modifier.width(16.dp))
-            
-            // File Details
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 8.dp)
-            ) {
-                Text(
-                    text = file.name, 
-                    color = TextPrimary, 
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 2, // Allow wrapping to 2 lines per audit
-                    // No Ellipsis per audit, let it truncate naturally or fit within 2 lines
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = if (file.isFolder) file.date else "${file.size}  •  ${file.date}", 
-                    color = TextSecondary, 
-                    fontSize = 13.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-            
-            // Trailing icon/checkbox reserved container
-            Box(
-                modifier = Modifier.width(32.dp),
-                contentAlignment = Alignment.CenterEnd
-            ) {
-                if (isSelectionMode) {
-                    Checkbox(
-                        checked = isSelected,
-                        onCheckedChange = null,
-                        colors = CheckboxDefaults.colors(
-                            checkedColor = Color(0xFF1E88E5),
-                            uncheckedColor = TextSecondary,
-                            checkmarkColor = Color.White
-                        ),
-                        modifier = Modifier.size(24.dp)
-                    )
-                } else if (file.isFolder) {
-                    Icon(
-                        imageVector = Icons.Default.ChevronRight,
-                        contentDescription = null,
-                        tint = TextSecondary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-        }
-
-
-        // Divider
-        HorizontalDivider(
-            modifier = Modifier.padding(start = 80.dp),
-            thickness = 1.dp,
-            color = DividerColor
-        )
-    }
-}
 
 @Composable
-fun DetailsDialog(details: SelectionDetails, onDismiss: () -> Unit) {
+fun DetailsDialog(details: com.zerogram.core.ui.components.SelectionDetails, onDismiss: () -> Unit) {
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -908,17 +795,19 @@ fun DetailsDialog(details: SelectionDetails, onDismiss: () -> Unit) {
                 Text(details.sizeText, color = Color.White, fontSize = 18.sp)
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                if (details.itemsText != null) {
+                val itemsText = details.itemsText
+                if (itemsText != null) {
                     Text("Items", color = Color(0xFFA0A0A0), fontSize = 12.sp)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(details.itemsText, color = Color.White, fontSize = 18.sp)
+                    Text(itemsText, color = Color.White, fontSize = 18.sp)
                     Spacer(modifier = Modifier.height(16.dp))
                 }
                 
-                if (!details.isMultiple && details.location != null) {
+                val location = details.location
+                if (!details.isMultiple && location != null) {
                     Text("Location", color = Color(0xFFA0A0A0), fontSize = 12.sp)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(details.location, color = Color(0xFF1E88E5), fontSize = 18.sp)
+                    Text(location, color = Color(0xFF1E88E5), fontSize = 18.sp)
                     Spacer(modifier = Modifier.height(24.dp))
                 } else {
                     Spacer(modifier = Modifier.height(8.dp))

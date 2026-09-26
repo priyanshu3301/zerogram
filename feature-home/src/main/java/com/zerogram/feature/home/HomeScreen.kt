@@ -1,5 +1,6 @@
-package com.example.zerogram.ui.home
+package com.zerogram.feature.home
 
+import com.zerogram.core.ui.navigation.SharedBoundsAnimSpec
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -17,9 +18,10 @@ import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.*
-import com.example.zerogram.ui.components.AppDropdownMenu
-import com.example.zerogram.ui.components.AppDropdownMenuItem
+import com.zerogram.core.ui.components.AppDropdownMenu
+import com.zerogram.core.ui.components.AppDropdownMenuItem
 import androidx.compose.runtime.*
+import com.zerogram.feature.folder.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,11 +42,11 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.activity.compose.BackHandler
-import com.example.zerogram.R
+import com.zerogram.core.ui.R
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.zerogram.LocalSharedTransitionScope
-import com.example.zerogram.LocalAnimatedVisibilityScope
-import com.example.zerogram.SharedBoundsAnimSpec
+import com.zerogram.core.ui.navigation.LocalSharedTransitionScope
+import com.zerogram.core.ui.navigation.LocalAnimatedVisibilityScope
+import com.zerogram.core.ui.navigation.SharedBoundsAnimSpec
 
 // Dark Theme Colors based on screenshot
 // Constants removed in favor of MaterialTheme.colorScheme
@@ -218,7 +220,7 @@ fun HomeScreen(
                     onRecentlyDeletedClick = onRecentlyDeletedClick,
                     topPadding = paddingValues.calculateTopPadding()
                 )
-                1 -> com.example.zerogram.ui.transfers.TransfersScreen(
+                1 -> com.zerogram.feature.transfers.TransfersScreen(
                     onNavigateBack = { coroutineScope.launch { pagerState.animateScrollToPage(0) } },
                     onNavigateToFolder = onNavigateToFolder
                 )

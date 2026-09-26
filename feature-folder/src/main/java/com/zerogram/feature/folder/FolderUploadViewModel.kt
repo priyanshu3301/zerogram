@@ -1,19 +1,18 @@
-package com.example.zerogram.ui.folder
+package com.zerogram.feature.folder
 
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.zerogram.data.local.ZerogramDatabase
-import com.example.zerogram.data.local.entity.FileEntity
-import com.example.zerogram.data.local.entity.FolderEntity
-import com.example.zerogram.data.local.entity.TransferJobEntity
-import com.example.zerogram.domain.repository.IVaultManager
-import com.example.zerogram.service.TransferService
-import com.example.zerogram.util.FolderScanner
-import com.example.zerogram.util.ScanOptions
-import com.example.zerogram.util.ScanResult
+import com.zerogram.data.local.ZerogramDatabase
+import com.zerogram.data.local.entity.FileEntity
+import com.zerogram.data.local.entity.FolderEntity
+import com.zerogram.data.local.entity.TransferJobEntity
+import com.zerogram.domain.repository.IVaultManager
+import com.zerogram.util.FolderScanner
+import com.zerogram.util.ScanOptions
+import com.zerogram.util.ScanResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
@@ -71,7 +70,7 @@ class FolderUploadViewModel @Inject constructor(
         val file = currentState.file
         val options = currentState.options
 
-        val realPath = file?.absolutePath ?: (uri?.let { com.example.zerogram.util.UriUtils.getPath(context, it) })
+        val realPath = file?.absolutePath ?: (uri?.let { com.zerogram.util.UriUtils.getPath(context, it) })
         if (realPath == null) {
             _uiState.value = FolderUploadState.Error("Could not resolve folder path.")
             return
@@ -203,7 +202,12 @@ class FolderUploadViewModel @Inject constructor(
                     }
                 }
 
-                TransferService.startService(context)
+                val intent = android.content.Intent().apply { setClassName(context.packageName, "com.zerogram.service.TransferService") }
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
                 _uiState.value = FolderUploadState.Idle
 
             } catch (e: Exception) {

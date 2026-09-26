@@ -1,8 +1,8 @@
-package com.example.zerogram.ui.home
+package com.zerogram.feature.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.zerogram.data.repository.StatsRepository
+import com.zerogram.data.repository.StatsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -12,9 +12,9 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.Dispatchers
 import androidx.compose.runtime.Immutable
-import com.example.zerogram.data.local.dao.HomeStats
-import com.example.zerogram.R
-import com.example.zerogram.util.FormatUtils
+import com.zerogram.data.local.dao.HomeStats
+import com.zerogram.core.ui.R
+import com.zerogram.util.FormatUtils
 
 @Immutable
 data class CategoryStats(

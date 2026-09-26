@@ -1,4 +1,4 @@
-package com.example.zerogram.ui.folder
+package com.zerogram.feature.folder
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.zerogram.R
+import com.zerogram.core.ui.R
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -138,7 +138,7 @@ fun FolderPickerBottomSheet(
                                 overflow = TextOverflow.Ellipsis
                             )
                             val itemText = if (folder.itemCount == 1) "1 item" else "${folder.itemCount} items"
-                            val dateText = com.example.zerogram.util.FormatUtils.formatDate(folder.createdAt)
+                            val dateText = com.zerogram.util.FormatUtils.formatDate(folder.createdAt)
                             Text(
                                 text = "$itemText | $dateText",
                                 color = TextSecondary,

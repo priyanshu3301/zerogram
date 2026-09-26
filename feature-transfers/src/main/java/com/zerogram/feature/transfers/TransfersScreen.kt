@@ -1,4 +1,4 @@
-package com.example.zerogram.ui.transfers
+package com.zerogram.feature.transfers
 
 import android.app.DownloadManager
 import android.content.Intent
@@ -17,10 +17,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
-import com.example.zerogram.ui.components.AppDropdownMenu
-import com.example.zerogram.ui.components.AppDropdownMenuItem
+import com.zerogram.core.ui.components.AppDropdownMenu
+import com.zerogram.core.ui.components.AppDropdownMenuItem
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
+import com.zerogram.feature.folder.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,8 +33,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.zerogram.core.utils.FileOpener
-import com.example.zerogram.data.local.dao.TransferJobWithFile
+import com.zerogram.core.ui.utils.FileOpener
+import com.zerogram.data.local.dao.TransferJobWithFile
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -525,7 +526,7 @@ fun TransferJobItem(
                                         
                                         val uri = FileProvider.getUriForFile(
                                             context, 
-                                            "com.example.zerogram.fileprovider", 
+                                            "com.zerogram.fileprovider", 
                                             downloadsDir
                                         )
                                         val intent = Intent(Intent.ACTION_VIEW).apply {

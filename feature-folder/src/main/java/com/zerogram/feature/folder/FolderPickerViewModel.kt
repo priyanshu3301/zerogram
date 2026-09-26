@@ -1,10 +1,10 @@
-package com.example.zerogram.ui.folder
+package com.zerogram.feature.folder
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.zerogram.data.local.dao.FolderDao
-import com.example.zerogram.data.local.dao.FolderWithCount
-import com.example.zerogram.data.local.entity.FolderEntity
+import com.zerogram.data.local.dao.FolderDao
+import com.zerogram.data.local.dao.FolderWithCount
+import com.zerogram.data.local.entity.FolderEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

@@ -1,4 +1,4 @@
-package com.zerogram.ui.login
+package com.zerogram.feature.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

@@ -1,13 +1,12 @@
-package com.example.zerogram.ui.transfers
+package com.zerogram.feature.transfers
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.zerogram.core.logging.SecureLogger
-import com.example.zerogram.data.local.ZerogramDatabase
-import com.example.zerogram.data.local.dao.TransferJobWithFile
-import com.example.zerogram.domain.repository.ITelegramRepository
-import com.example.zerogram.domain.model.AppResult
-import com.example.zerogram.service.TransferService
+import com.zerogram.core.logging.SecureLogger
+import com.zerogram.data.local.ZerogramDatabase
+import com.zerogram.data.local.dao.TransferJobWithFile
+import com.zerogram.domain.repository.ITelegramRepository
+import com.zerogram.domain.model.AppResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -60,7 +59,12 @@ class TransfersViewModel @Inject constructor(
         viewModelScope.launch {
             // Setting it to queued will allow TransferService to pick it up again
             database.transferJobDao().updateJobStatus(jobId, "queued")
-            TransferService.startService(context)
+            val intent = android.content.Intent().apply { setClassName(context.packageName, "com.zerogram.service.TransferService") }
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
         }
     }
 
@@ -93,7 +97,12 @@ class TransfersViewModel @Inject constructor(
                 targetStatus = "queued",
                 currentStatuses = listOf("paused", "failed", "canceled")
             )
-            TransferService.startService(context)
+            val intent = android.content.Intent().apply { setClassName(context.packageName, "com.zerogram.service.TransferService") }
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
             _uiEvents.emit("Resumed all $type transfers")
         }
     }
@@ -118,7 +127,12 @@ class TransfersViewModel @Inject constructor(
     fun resumeJobs(jobIds: Set<String>) {
         viewModelScope.launch {
             database.transferJobDao().updateJobStatuses(jobIds.toList(), "queued")
-            TransferService.startService(context)
+            val intent = android.content.Intent().apply { setClassName(context.packageName, "com.zerogram.service.TransferService") }
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
             _uiEvents.emit("Resumed ${jobIds.size} transfers")
         }
     }
@@ -158,8 +172,9 @@ class TransfersViewModel @Inject constructor(
                         // Cleanup TDLib cache for removed transfers.
                         // If it's a download, we clean up the partial/completed cached copy.
                         // If it's an upload, we clean up any cached copy TDLib created.
-                        if (file.telegramFileId != null) {
-                            val cleanupResult = telegramRepository.deleteLocalFile(file.telegramFileId)
+                        val tFileId = file.telegramFileId
+                                    if (tFileId != null) {
+                                        val cleanupResult = telegramRepository.deleteLocalFile(tFileId)
                             if (cleanupResult is AppResult.Failure) {
                                 SecureLogger.e("TransfersViewModel", "Failed to clean up file cache on removal: ${cleanupResult.error.message}")
                             } else {

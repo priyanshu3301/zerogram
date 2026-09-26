@@ -1,4 +1,4 @@
-package com.zerogram.ui.vault
+package com.zerogram.feature.vault
 
 import android.app.Application
 import androidx.lifecycle.ViewModel
@@ -7,7 +7,6 @@ import com.zerogram.domain.model.AppResult
 import com.zerogram.domain.repository.ITelegramRepository
 import com.zerogram.domain.repository.IVaultManager
 import com.zerogram.domain.repository.TelegramChannel
-import com.zerogram.service.TransferService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -114,7 +113,12 @@ class VaultSelectionViewModel @Inject constructor(
             when (val result = vaultManager.unlockVault(chatId, keyBase64)) {
                 is AppResult.Success -> {
                     _actionState.value = VaultActionState.VaultUnlocked
-                    TransferService.startService(context)
+                    val intent = android.content.Intent().apply { setClassName(context.packageName, "com.zerogram.service.TransferService") }
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
                 }
                 is AppResult.Failure -> {
                     _actionState.value = VaultActionState.UnlockFailed(result.error.message)

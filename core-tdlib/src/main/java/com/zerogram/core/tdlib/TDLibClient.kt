@@ -1,18 +1,18 @@
-package com.example.zerogram.telegram
+package com.zerogram.core.tdlib
 
 import android.content.Context
 import android.os.Build
-import com.example.zerogram.core.logging.SecureLogger
-import com.example.zerogram.domain.model.AppError
-import com.example.zerogram.domain.model.AppResult
-import com.example.zerogram.domain.repository.ITelegramRepository
-import com.example.zerogram.domain.repository.TelegramAuthState
-import com.example.zerogram.domain.repository.TelegramChannel
-import com.example.zerogram.domain.repository.TelegramConnectionState
-import com.example.zerogram.domain.repository.TelegramUser
-import com.example.zerogram.domain.repository.UploadEvent
-import com.example.zerogram.domain.repository.DownloadEvent
-import com.example.zerogram.domain.repository.TelegramMessage
+import com.zerogram.core.logging.SecureLogger
+import com.zerogram.domain.model.AppError
+import com.zerogram.domain.model.AppResult
+import com.zerogram.domain.repository.ITelegramRepository
+import com.zerogram.domain.repository.TelegramAuthState
+import com.zerogram.domain.repository.TelegramChannel
+import com.zerogram.domain.repository.TelegramConnectionState
+import com.zerogram.domain.repository.TelegramUser
+import com.zerogram.domain.repository.UploadEvent
+import com.zerogram.domain.repository.DownloadEvent
+import com.zerogram.domain.repository.TelegramMessage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -277,6 +277,7 @@ class TDLibClient @Inject constructor(
         // issuing the request below, closing that race window.
         val subscribed = CompletableDeferred<Unit>()
         val fileUpdateJob = launch {
+            var lastEmitTime = 0L
             _fileUpdates.asSharedFlow()
                 .onSubscription { subscribed.complete(Unit) }
                 .collect { update ->
@@ -284,12 +285,16 @@ class TDLibClient @Inject constructor(
                     val targetId = trackedFileId ?: return@collect
                     if (file.id != targetId) return@collect
 
-                    // Emit progress
+                    // Emit progress (Throttled to 300ms)
                     if (file.expectedSize > 0) {
-                        trySend(UploadEvent.Progress(
-                            uploadedBytes = file.remote.uploadedSize,
-                            totalBytes = file.expectedSize
-                        ))
+                        val now = System.currentTimeMillis()
+                        if (now - lastEmitTime >= 300) {
+                            trySend(UploadEvent.Progress(
+                                uploadedBytes = file.remote.uploadedSize,
+                                totalBytes = file.expectedSize
+                            ))
+                            lastEmitTime = now
+                        }
                     }
 
                     // Check completion
@@ -377,6 +382,7 @@ class TDLibClient @Inject constructor(
         // download and blocking the rest of the queue behind it.
         val subscribed = CompletableDeferred<Unit>()
         val fileUpdateJob = launch {
+            var lastEmitTime = 0L
             _fileUpdates
                 .onSubscription { subscribed.complete(Unit) }
                 .collect { update ->
@@ -386,7 +392,11 @@ class TDLibClient @Inject constructor(
                             trySend(DownloadEvent.Completed(local.path))
                             close()
                         } else if (local.isDownloadingActive) {
-                            trySend(DownloadEvent.Progress(local.downloadedSize.toLong(), update.file.expectedSize.toLong()))
+                            val now = System.currentTimeMillis()
+                            if (now - lastEmitTime >= 300) {
+                                trySend(DownloadEvent.Progress(local.downloadedSize.toLong(), update.file.expectedSize.toLong()))
+                                lastEmitTime = now
+                            }
                         }
                     }
                 }

@@ -1,18 +1,18 @@
-package com.example.zerogram.data.repository
+package com.zerogram.data.repository
 
 import android.content.Context
-import com.example.zerogram.core.logging.SecureLogger
-import com.example.zerogram.crypto.CryptoManager
-import com.example.zerogram.data.local.ZerogramDatabase
-import com.example.zerogram.data.local.entity.VaultConfigEntity
-import com.example.zerogram.domain.model.AppError
-import com.example.zerogram.domain.model.AppResult
-import com.example.zerogram.domain.repository.CredentialsManager
-import com.example.zerogram.domain.repository.ITelegramRepository
-import com.example.zerogram.domain.repository.IVaultManager
-import com.example.zerogram.domain.repository.UploadEvent
-import com.example.zerogram.domain.repository.DownloadEvent
-import com.example.zerogram.domain.repository.TelegramMessage
+import com.zerogram.core.logging.SecureLogger
+import com.zerogram.crypto.CryptoManager
+import com.zerogram.data.local.ZerogramDatabase
+import com.zerogram.data.local.entity.VaultConfigEntity
+import com.zerogram.domain.model.AppError
+import com.zerogram.domain.model.AppResult
+import com.zerogram.domain.repository.CredentialsManager
+import com.zerogram.domain.repository.ITelegramRepository
+import com.zerogram.domain.repository.IVaultManager
+import com.zerogram.domain.repository.UploadEvent
+import com.zerogram.domain.repository.DownloadEvent
+import com.zerogram.domain.repository.TelegramMessage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.Dispatchers
@@ -171,7 +171,7 @@ class VaultManagerImpl @Inject constructor(
                 return@withContext AppResult.Failure(AppError.UnknownError("database.encrypt not found in this channel"))
             }
 
-            val fileId = dbMessage.documentFileId
+            val fileId = dbMessage.documentFileId!!
 
             // Download file
             val downloadedFilePath = downloadFile(fileId)

@@ -1,4 +1,4 @@
-package com.example.zerogram.ui.folder
+package com.zerogram.feature.folder
 
 import android.os.Environment
 import androidx.compose.foundation.clickable

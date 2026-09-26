@@ -1,8 +1,8 @@
-package com.example.zerogram.data.repository
+package com.zerogram.data.repository
 
-import com.example.zerogram.data.local.ZerogramDatabase
-import com.example.zerogram.data.local.dao.HomeStats
-import com.example.zerogram.util.FormatUtils
+import com.zerogram.data.local.ZerogramDatabase
+import com.zerogram.data.local.dao.HomeStats
+import com.zerogram.util.FormatUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

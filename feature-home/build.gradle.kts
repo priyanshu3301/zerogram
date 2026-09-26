@@ -28,6 +28,8 @@ dependencies {
     implementation(project(":core-ui"))
     implementation(project(":core-tdlib"))
     implementation(project(":core-data"))
+    implementation(project(":feature-folder"))
+    implementation(project(":feature-transfers"))
     
     implementation(libs.androidx.core.ktx)
     implementation(platform(libs.androidx.compose.bom))

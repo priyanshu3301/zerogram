@@ -1,4 +1,4 @@
-package com.zerogram.ui.components
+package com.zerogram.core.ui.components
 
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.zerogram.ui.theme.SurfaceDark
+import com.zerogram.core.ui.theme.SurfaceDark
 
 @Composable
 fun AppDropdownMenu(

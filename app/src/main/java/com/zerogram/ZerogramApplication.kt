@@ -9,19 +9,19 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.zerogram.domain.repository.ITelegramRepository
 
-import com.google.crypto.tink.streamingaead.StreamingAeadConfig
+import androidx.startup.AppInitializer
+import com.zerogram.startup.TDLibInitializer
 
 @HiltAndroidApp
 class ZerogramApplication : Application() {
     
-    @Inject lateinit var telegramRepository: ITelegramRepository
-    private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    
     override fun onCreate() {
         super.onCreate()
-        StreamingAeadConfig.register()
-        appScope.launch {
-            telegramRepository.warmUp()
-        }
+        
+        // Use App Startup to sequence initializers explicitly.
+        // We initialize it manually here because Hilt components are not
+        // available in the manifest-declared InitializationProvider.
+        AppInitializer.getInstance(this)
+            .initializeComponent(TDLibInitializer::class.java)
     }
 }

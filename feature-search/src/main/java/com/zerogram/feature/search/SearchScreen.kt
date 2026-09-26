@@ -1,4 +1,4 @@
-package com.example.zerogram.ui.search
+package com.zerogram.feature.search
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -10,18 +10,28 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
-import com.example.zerogram.ui.components.AppDropdownMenu
-import com.example.zerogram.ui.components.AppDropdownMenuItem
+import com.zerogram.core.ui.components.AppDropdownMenu
+import com.zerogram.core.ui.components.AppDropdownMenuItem
+import com.zerogram.core.ui.components.AppList
+import com.zerogram.core.ui.components.AppListItem
+import com.zerogram.core.ui.components.ImmutableListWrapper
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.zerogram.core.ui.components.SortOrder
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import com.zerogram.core.ui.navigation.SharedBoundsAnimSpec
+import com.zerogram.core.ui.navigation.LocalAnimatedVisibilityScope
+import com.zerogram.core.ui.navigation.LocalSharedTransitionScope
+import com.zerogram.core.ui.components.SelectionDetails
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.zerogram.R
-import com.example.zerogram.ui.folder.*
+import com.zerogram.core.ui.R
+import com.zerogram.feature.folder.*
 
 private val BackgroundColor = Color(0xFF000000)
 private val SurfaceColor = Color(0xFF1E1E1E)
@@ -50,7 +60,7 @@ fun SearchScreen(
     var detailsData by remember { mutableStateOf<SelectionDetails?>(null) }
     
     var showRenameDialog by remember { mutableStateOf(false) }
-    var itemToRename by remember { mutableStateOf<FileItemData?>(null) }
+    var itemToRename by remember { mutableStateOf<AppListItem?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.uiEvents.collect { message ->
@@ -119,41 +129,41 @@ fun SearchScreen(
                                         text = { Text("Newest first", color = TextPrimary, fontSize = 16.sp) },
                                         onClick = { 
                                             showSortMenu = false
-                                            viewModel.setSortOrder(SortOrder.NEWEST_FIRST)
+                                            viewModel.setSortOrder(com.zerogram.core.ui.components.SortOrder.NEWEST_FIRST)
                                         },
-                                        trailingIcon = if (sortOrder == SortOrder.NEWEST_FIRST) { { Icon(Icons.Default.Check, contentDescription = null, tint = PrimaryBlue) } } else null
+                                        trailingIcon = if (sortOrder == com.zerogram.core.ui.components.SortOrder.NEWEST_FIRST) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = PrimaryBlue) } } else null
                                     )
                                     AppDropdownMenuItem(
                                         text = { Text("Name A-Z", color = TextPrimary, fontSize = 16.sp) },
                                         onClick = { 
                                             showSortMenu = false
-                                            viewModel.setSortOrder(SortOrder.NAME_A_Z)
+                                            viewModel.setSortOrder(com.zerogram.core.ui.components.SortOrder.NAME_A_Z)
                                         },
-                                        trailingIcon = if (sortOrder == SortOrder.NAME_A_Z) { { Icon(Icons.Default.Check, contentDescription = null, tint = PrimaryBlue) } } else null
+                                        trailingIcon = if (sortOrder == com.zerogram.core.ui.components.SortOrder.NAME_A_Z) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = PrimaryBlue) } } else null
                                     )
                                     AppDropdownMenuItem(
                                         text = { Text("Name Z-A", color = TextPrimary, fontSize = 16.sp) },
                                         onClick = { 
                                             showSortMenu = false
-                                            viewModel.setSortOrder(SortOrder.NAME_Z_A)
+                                            viewModel.setSortOrder(com.zerogram.core.ui.components.SortOrder.NAME_Z_A)
                                         },
-                                        trailingIcon = if (sortOrder == SortOrder.NAME_Z_A) { { Icon(Icons.Default.Check, contentDescription = null, tint = PrimaryBlue) } } else null
+                                        trailingIcon = if (sortOrder == com.zerogram.core.ui.components.SortOrder.NAME_Z_A) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = PrimaryBlue) } } else null
                                     )
                                     AppDropdownMenuItem(
                                         text = { Text("Largest first", color = TextPrimary, fontSize = 16.sp) },
                                         onClick = { 
                                             showSortMenu = false
-                                            viewModel.setSortOrder(SortOrder.LARGEST_FIRST)
+                                            viewModel.setSortOrder(com.zerogram.core.ui.components.SortOrder.LARGEST_FIRST)
                                         },
-                                        trailingIcon = if (sortOrder == SortOrder.LARGEST_FIRST) { { Icon(Icons.Default.Check, contentDescription = null, tint = PrimaryBlue) } } else null
+                                        trailingIcon = if (sortOrder == com.zerogram.core.ui.components.SortOrder.LARGEST_FIRST) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = PrimaryBlue) } } else null
                                     )
                                     AppDropdownMenuItem(
                                         text = { Text("Smallest first", color = TextPrimary, fontSize = 16.sp) },
                                         onClick = { 
                                             showSortMenu = false
-                                            viewModel.setSortOrder(SortOrder.SMALLEST_FIRST)
+                                            viewModel.setSortOrder(com.zerogram.core.ui.components.SortOrder.SMALLEST_FIRST)
                                         },
-                                        trailingIcon = if (sortOrder == SortOrder.SMALLEST_FIRST) { { Icon(Icons.Default.Check, contentDescription = null, tint = PrimaryBlue) } } else null
+                                        trailingIcon = if (sortOrder == com.zerogram.core.ui.components.SortOrder.SMALLEST_FIRST) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = PrimaryBlue) } } else null
                                     )
                                 }
                             }
@@ -248,37 +258,24 @@ fun SearchScreen(
                 Text("No matching items found", color = TextSecondary, fontSize = 16.sp)
             }
         } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                items(
-                    count = filesAndFolders.size,
-                    key = { index -> filesAndFolders[index].id },
-                    contentType = { index -> if (filesAndFolders[index].isFolder) "folder" else "file" }
-                ) { index ->
-                    val item = filesAndFolders[index]
-                    val isSelected = selectedItems.contains(item.id)
-                    
-                    FileListItem(
-                        file = item,
-                        isSelected = isSelected,
-                        isSelectionMode = isSelectionMode,
-                        onClick = {
-                            if (isSelectionMode) {
-                                viewModel.toggleSelection(item.id)
-                            } else {
-                                if (!item.isFolder) {
-                                    viewModel.onFileClicked(item.id)
-                                }
-                            }
-                        },
-                        onLongClick = {
+            Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+                AppList(
+                    items = ImmutableListWrapper(filesAndFolders),
+                    selectedItems = selectedItems,
+                    isSelectionMode = isSelectionMode,
+                    onItemClick = { item ->
+                        if (isSelectionMode) {
                             viewModel.toggleSelection(item.id)
+                        } else {
+                            if (item is AppListItem.File) {
+                                viewModel.onFileClicked(item.id)
+                            }
                         }
-                    )
-                }
+                    },
+                    onItemLongClick = { item ->
+                        viewModel.toggleSelection(item.id)
+                    }
+                )
             }
         }
     }
@@ -294,9 +291,10 @@ fun SearchScreen(
         )
     }
     
-    if (showDetailsDialog && detailsData != null) {
+    val currentDetails = detailsData
+    if (showDetailsDialog && currentDetails != null) {
         DetailsDialog(
-            details = detailsData!!,
+            details = currentDetails,
             onDismiss = { 
                 showDetailsDialog = false
                 detailsData = null

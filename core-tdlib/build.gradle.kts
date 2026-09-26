@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
 }
@@ -15,16 +14,22 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    buildTypes {
+        debug {
+            buildConfigField("boolean", "SECURE_LOG_ENABLED", "true")
+        }
+        release {
+            buildConfigField("boolean", "SECURE_LOG_ENABLED", "false")
+        }
+    }
     buildFeatures {
-        compose = true
+        buildConfig = true
     }
 }
 
-composeCompiler {
-    enableStrongSkippingMode = true
-}
-
 dependencies {
+    implementation(project(":tdlib"))
+    implementation(libs.androidx.security.crypto)
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.hilt.android)

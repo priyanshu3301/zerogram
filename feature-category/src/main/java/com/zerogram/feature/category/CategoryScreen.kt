@@ -1,4 +1,4 @@
-package com.example.zerogram.ui.category
+package com.zerogram.feature.category
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,11 +12,18 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
-import com.example.zerogram.ui.components.AppDropdownMenu
-import com.example.zerogram.ui.components.AppDropdownMenuItem
+import com.zerogram.core.ui.components.AppDropdownMenu
+import com.zerogram.core.ui.components.AppDropdownMenuItem
+import com.zerogram.core.ui.components.AppList
+import com.zerogram.core.ui.components.AppListItem
+import com.zerogram.core.ui.components.ImmutableListWrapper
 import androidx.compose.runtime.*
+import com.zerogram.feature.folder.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.zerogram.core.ui.navigation.SharedBoundsAnimSpec
+import com.zerogram.core.ui.navigation.LocalAnimatedVisibilityScope
+import com.zerogram.core.ui.navigation.LocalSharedTransitionScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -25,19 +32,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.activity.compose.BackHandler
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.zerogram.R
-import com.example.zerogram.ui.folder.FileItemData
-import com.example.zerogram.ui.folder.FileListItem
-import com.example.zerogram.ui.folder.SelectionDetails
-import com.example.zerogram.ui.folder.DetailsDialog
-import com.example.zerogram.ui.folder.FolderPickerBottomSheet
-import com.example.zerogram.ui.folder.BottomBarAction
-import com.example.zerogram.ui.search.SortOrder
-import com.example.zerogram.LocalSharedTransitionScope
-import com.example.zerogram.LocalAnimatedVisibilityScope
+import com.zerogram.core.ui.R
+import com.zerogram.core.ui.components.SelectionDetails
+import com.zerogram.feature.folder.DetailsDialog
+import com.zerogram.feature.folder.FolderPickerBottomSheet
+import com.zerogram.feature.folder.BottomBarAction
+import com.zerogram.core.ui.components.SortOrder
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import com.example.zerogram.SharedBoundsAnimSpec
 
 private val BackgroundColor = Color(0xFF000000)
 private val SurfaceColor = Color(0xFF1E1E1E)
@@ -72,7 +74,7 @@ fun CategoryScreen(
     var detailsData by remember { mutableStateOf<SelectionDetails?>(null) }
     
     var showRenameDialog by remember { mutableStateOf(false) }
-    var itemToRename by remember { mutableStateOf<FileItemData?>(null) }
+    var itemToRename by remember { mutableStateOf<AppListItem?>(null) }
 
     if (isSelectionMode) {
         BackHandler {
@@ -341,37 +343,27 @@ fun CategoryScreen(
         }
     ) { paddingValues ->
         val displayItems = if (isTransitionFinished) filesAndFolders else emptyList()
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .then(listModifier)
-        ) {
-            items(
-                items = displayItems,
-                key = { it.id },
-                contentType = { if (it.isFolder) "folder" else "file" }
-            ) { file ->
-                FileListItem(
-                    file = file,
-                    modifier = Modifier.animateItem(),
-                    isSelected = selectedItems.contains(file.id),
-                    isSelectionMode = isSelectionMode,
-                    onClick = {
-                        if (isSelectionMode) {
-                            viewModel.toggleSelection(file.id)
-                        } else {
-                            viewModel.onFileClicked(file.id)
-                        }
-                    },
-                    onLongClick = {
-                        if (!isSelectionMode) {
-                            isSelectionMode = true
-                            viewModel.toggleSelection(file.id)
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues).then(listModifier)) {
+            AppList(
+                items = ImmutableListWrapper(displayItems),
+                selectedItems = selectedItems,
+                isSelectionMode = isSelectionMode,
+                onItemClick = { item ->
+                    if (isSelectionMode) {
+                        viewModel.toggleSelection(item.id)
+                    } else {
+                        if (item is AppListItem.File) {
+                            viewModel.onFileClicked(item.id)
                         }
                     }
-                )
-            }
+                },
+                onItemLongClick = { item ->
+                    if (!isSelectionMode) {
+                        isSelectionMode = true
+                        viewModel.toggleSelection(item.id)
+                    }
+                }
+            )
         }
     }
 
@@ -387,8 +379,9 @@ fun CategoryScreen(
         )
     }
 
-    if (showDetailsDialog && detailsData != null) {
-        DetailsDialog(details = detailsData!!, onDismiss = { showDetailsDialog = false })
+    val currentDetails = detailsData
+    if (showDetailsDialog && currentDetails != null) {
+        DetailsDialog(details = currentDetails, onDismiss = { showDetailsDialog = false })
     }
 
     if (showRenameDialog && itemToRename != null) {
@@ -455,35 +448,35 @@ fun CategorySortMenu(
         AppDropdownMenuItem(
             text = { Text("Newest first", color = TextPrimary, fontSize = 18.sp) },
             onClick = { onSortSelected(SortOrder.NEWEST_FIRST) },
-            trailingIcon = if (sortOrder == SortOrder.NEWEST_FIRST) { { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
+            trailingIcon = if (sortOrder == SortOrder.NEWEST_FIRST) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
         )
         HorizontalDivider(color = DividerColor, thickness = 1.dp)
         AppDropdownMenuItem(
             text = { Text("Name A-Z", color = TextPrimary, fontSize = 18.sp) },
             onClick = { onSortSelected(SortOrder.NAME_A_Z) },
-            trailingIcon = if (sortOrder == SortOrder.NAME_A_Z) { { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
+            trailingIcon = if (sortOrder == SortOrder.NAME_A_Z) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
         )
         HorizontalDivider(color = DividerColor, thickness = 1.dp)
         AppDropdownMenuItem(
             text = { Text("Name Z-A", color = TextPrimary, fontSize = 18.sp) },
             onClick = { onSortSelected(SortOrder.NAME_Z_A) },
-            trailingIcon = if (sortOrder == SortOrder.NAME_Z_A) { { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
+            trailingIcon = if (sortOrder == SortOrder.NAME_Z_A) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
         )
         HorizontalDivider(color = DividerColor, thickness = 1.dp)
         AppDropdownMenuItem(
             text = { Text("Largest first", color = TextPrimary, fontSize = 18.sp) },
             onClick = { onSortSelected(SortOrder.LARGEST_FIRST) },
-            trailingIcon = if (sortOrder == SortOrder.LARGEST_FIRST) { { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
+            trailingIcon = if (sortOrder == SortOrder.LARGEST_FIRST) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
         )
         HorizontalDivider(color = DividerColor, thickness = 1.dp)
         AppDropdownMenuItem(
             text = { Text("Smallest first", color = TextPrimary, fontSize = 18.sp) },
             onClick = { onSortSelected(SortOrder.SMALLEST_FIRST) },
-            trailingIcon = if (sortOrder == SortOrder.SMALLEST_FIRST) { { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
+            trailingIcon = if (sortOrder == SortOrder.SMALLEST_FIRST) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
         )
     }

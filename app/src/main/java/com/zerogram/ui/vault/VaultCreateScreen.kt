@@ -1,4 +1,4 @@
-package com.zerogram.ui.vault
+package com.zerogram.feature.vault
 
 import android.content.ClipData
 import android.content.ClipboardManager

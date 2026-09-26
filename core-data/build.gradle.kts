@@ -17,8 +17,9 @@ android {
 }
 
 dependencies {
+    api(project(":core-tdlib"))
     implementation(libs.androidx.core.ktx)
-    implementation(libs.room.runtime)
+    api(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
     implementation(libs.androidx.security.crypto)

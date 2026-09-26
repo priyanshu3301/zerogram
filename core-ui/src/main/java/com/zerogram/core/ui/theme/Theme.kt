@@ -1,4 +1,4 @@
-package com.zerogram.ui.theme
+package com.zerogram.core.ui.theme
 
 import android.app.Activity
 import android.os.Build

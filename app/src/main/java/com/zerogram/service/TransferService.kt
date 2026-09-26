@@ -9,7 +9,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import com.zerogram.R
+import com.zerogram.core.ui.R
 import com.zerogram.core.logging.SecureLogger
 import com.zerogram.crypto.CryptoManager
 import com.zerogram.data.local.ZerogramDatabase
@@ -17,8 +17,8 @@ import com.zerogram.data.local.entity.TransferJobEntity
 import com.zerogram.domain.model.AppResult
 import com.zerogram.domain.repository.ITelegramRepository
 import com.zerogram.domain.repository.IVaultManager
-import com.example.zerogram.domain.repository.UploadEvent
-import com.example.zerogram.domain.repository.DownloadEvent
+import com.zerogram.domain.repository.UploadEvent
+import com.zerogram.domain.repository.DownloadEvent
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import java.io.File
@@ -89,7 +89,7 @@ class TransferService : Service() {
             return
         }
         
-        val storageChatId = config.storageChatId
+        val storageChatId = config.storageChatId!!
         val now = System.currentTimeMillis()
 
         cleanupOrphanedCacheFiles()
@@ -331,7 +331,7 @@ class TransferService : Service() {
                                     }
                                     is UploadEvent.Failed -> {
                                         val error = event.error
-                                        if (error is com.example.zerogram.domain.model.AppError.RateLimitError) {
+                                        if (error is com.zerogram.domain.model.AppError.RateLimitError) {
                                             SecureLogger.d("TransferService", "Rate limited, waiting ${error.retryAfterSeconds}s")
                                             updateNotification("Rate limited, waiting ${error.retryAfterSeconds}s...", 0)
                                             delay(error.retryAfterSeconds * 1000L)
@@ -427,7 +427,7 @@ class TransferService : Service() {
 
                 // 24-hour timeout prevents zombie downloads from blocking the queue forever, but allows large files
                 val downloadResult = withTimeoutOrNull(24 * 60 * 60 * 1000L) {
-                    telegramRepository.downloadDocument(fileEntity.telegramFileId, 0, 1)
+                    telegramRepository.downloadDocument(fileEntity.telegramFileId!!, 0, 1)
                         .collect { event ->
                             when (event) {
                                 is DownloadEvent.Progress -> {
@@ -491,7 +491,7 @@ class TransferService : Service() {
                                         database.fileDao().updateFile(updatedFile)
 
                                         // Clean up the local TDLib cached copy since the file has been successfully decrypted and saved
-                                        val cleanupResult = telegramRepository.deleteLocalFile(fileEntity.telegramFileId)
+                                        val cleanupResult = telegramRepository.deleteLocalFile(fileEntity.telegramFileId!!)
                                         if (cleanupResult is AppResult.Failure) {
                                             SecureLogger.e("TransferService", "Failed to clean up downloaded file cache: ${cleanupResult.error.message}")
                                         } else {
@@ -511,7 +511,7 @@ class TransferService : Service() {
                                 }
                                 is DownloadEvent.Failed -> {
                                     val error = event.error
-                                    if (error is com.example.zerogram.domain.model.AppError.RateLimitError) {
+                                    if (error is com.zerogram.domain.model.AppError.RateLimitError) {
                                         // FLOOD_WAIT: wait the required time, then retry
                                         SecureLogger.d("TransferService", "Rate limited, waiting ${error.retryAfterSeconds}s")
                                         updateNotification("Rate limited, waiting ${error.retryAfterSeconds}s...", 0)
@@ -581,7 +581,7 @@ class TransferService : Service() {
 
     private fun createNotification(content: String, progress: Int): Notification {
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(com.zerogram.R.mipmap.ic_launcher)
             .setContentTitle("Zerogram Transfers")
             .setContentText(content)
             .setOngoing(true)

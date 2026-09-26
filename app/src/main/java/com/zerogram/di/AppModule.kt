@@ -3,7 +3,7 @@ package com.zerogram.di
 import com.zerogram.domain.repository.ITelegramRepository
 import com.zerogram.domain.repository.IVaultManager
 import com.zerogram.data.repository.VaultManagerImpl
-import com.zerogram.telegram.TDLibClient
+import com.zerogram.core.tdlib.TDLibClient
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

@@ -1,8 +1,0 @@
-com.example.zerogram.baselineprofile-pngs-0 D:\zerogram 2.0\baselineprofile\build\generated\res\pngs\debug
-com.example.zerogram.baselineprofile-updated_navigation_xml-1 D:\zerogram 2.0\baselineprofile\build\generated\updated_navigation_xml\debug
-com.example.zerogram.baselineprofile-packageDebugResources-2 D:\zerogram 2.0\baselineprofile\build\intermediates\incremental\debug\packageDebugResources\merged.dir
-com.example.zerogram.baselineprofile-packageDebugResources-3 D:\zerogram 2.0\baselineprofile\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
-com.example.zerogram.baselineprofile-debug-4 D:\zerogram 2.0\baselineprofile\build\intermediates\merged_res\debug\mergeDebugResources
-com.example.zerogram.baselineprofile-debug-5 D:\zerogram 2.0\baselineprofile\src\debug\res
-com.example.zerogram.baselineprofile-main-6 D:\zerogram 2.0\baselineprofile\src\main\res
-gradleHome-0 C:\Users\panna\.gradle

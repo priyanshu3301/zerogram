@@ -26,7 +26,7 @@ android {
 }
 
 composeCompiler {
-    enableStrongSkippingMode = true
+    // enableStrongSkippingMode is deprecated, enabled by default in Compose Compiler 2.0
 }
 
 dependencies {
@@ -35,10 +35,20 @@ dependencies {
     implementation(project(":core-ui"))
     implementation(project(":feature-home"))
     implementation(project(":feature-folder"))
+    implementation(project(":feature-category"))
+    implementation(project(":feature-search"))
+    implementation(project(":feature-transfers"))
+    implementation("androidx.metrics:metrics-performance:1.0.0-beta01")
+    implementation(libs.tink.android)
+    implementation(libs.androidx.security.crypto)
+
     
     implementation(libs.androidx.core.ktx)
+    implementation("androidx.core:core-splashscreen:1.0.1")
+    implementation("androidx.startup:startup-runtime:1.1.1")
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.hilt.navigation.compose)
     implementation(libs.androidx.profileinstaller)
 }

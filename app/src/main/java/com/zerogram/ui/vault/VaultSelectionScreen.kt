@@ -1,4 +1,4 @@
-package com.zerogram.ui.vault
+package com.zerogram.feature.vault
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*

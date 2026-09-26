@@ -1,13 +1,14 @@
-package com.example.zerogram.ui.search
+package com.zerogram.feature.search
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
+import com.zerogram.core.ui.components.SortOrder
 import androidx.lifecycle.viewModelScope
-import com.example.zerogram.R
-import com.example.zerogram.data.local.ZerogramDatabase
-import com.example.zerogram.ui.folder.FileItemData
-import com.example.zerogram.ui.folder.SelectionDetails
-import com.example.zerogram.util.FormatUtils
+import com.zerogram.core.ui.R
+import com.zerogram.data.local.ZerogramDatabase
+import com.zerogram.core.ui.components.AppListItem
+import com.zerogram.core.ui.components.SelectionDetails
+import com.zerogram.util.FormatUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -17,13 +18,7 @@ import java.io.File
 import java.util.*
 import javax.inject.Inject
 
-enum class SortOrder {
-    NEWEST_FIRST,
-    NAME_A_Z,
-    NAME_Z_A,
-    LARGEST_FIRST,
-    SMALLEST_FIRST
-}
+
 
 @OptIn(ExperimentalCoroutinesApi::class, kotlinx.coroutines.FlowPreview::class)
 @HiltViewModel
@@ -35,8 +30,8 @@ class SearchViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    private val _sortOrder = MutableStateFlow(SortOrder.NEWEST_FIRST)
-    val sortOrder: StateFlow<SortOrder> = _sortOrder.asStateFlow()
+    private val _sortOrder = MutableStateFlow(com.zerogram.core.ui.components.SortOrder.NEWEST_FIRST)
+    val sortOrder: StateFlow<com.zerogram.core.ui.components.SortOrder> = _sortOrder.asStateFlow()
 
     private val _selectedItems = MutableStateFlow<Set<String>>(emptySet())
     val selectedItems: StateFlow<Set<String>> = _selectedItems.asStateFlow()
@@ -48,11 +43,11 @@ class SearchViewModel @Inject constructor(
         _searchQuery.value = query
     }
 
-    fun setSortOrder(order: SortOrder) {
+    fun setSortOrder(order: com.zerogram.core.ui.components.SortOrder) {
         _sortOrder.value = order
     }
 
-    val filesAndFolders: StateFlow<List<FileItemData>> = combine(
+    val filesAndFolders: StateFlow<List<AppListItem>> = combine(
         _searchQuery.debounce(250),
         _sortOrder
     ) { query, _ ->
@@ -65,46 +60,24 @@ class SearchViewModel @Inject constructor(
                 database.folderDao().searchFoldersWithCount(query),
                 database.fileDao().searchFiles(query)
             ) { folders, files ->
-                val items = mutableListOf<FileItemData>()
+                val items = mutableListOf<AppListItem>()
 
                 folders.forEach { folder ->
                     val itemsText = if (folder.itemCount == 1) "1 item" else "${folder.itemCount} items"
-                    items.add(
-                        FileItemData(
-                            id = folder.id,
-                            name = folder.name,
-                            date = FormatUtils.formatDate(folder.createdAt),
-                            size = itemsText,
-                            iconRes = R.drawable.ic_file_folder_icon,
-                            isFolder = true,
-                            timestamp = folder.createdAt,
-                            sizeBytes = 0L
-                        )
-                    )
+                    items.add(AppListItem.Folder(id = folder.id, name = folder.name, dateText = FormatUtils.formatDate(folder.createdAt), extraInfo = itemsText, iconRes = R.drawable.ic_file_folder_icon, timestamp = folder.createdAt))
                 }
 
                 files.forEach { file ->
-                    items.add(
-                        FileItemData(
-                            id = file.id,
-                            name = file.displayName,
-                            date = FormatUtils.formatDate(file.createdAt),
-                            size = FormatUtils.formatSize(file.sizeBytes),
-                            iconRes = getIconForMimeType(file.mimeType),
-                            isFolder = false,
-                            timestamp = file.createdAt,
-                            sizeBytes = file.sizeBytes
-                        )
-                    )
+                    items.add(AppListItem.File(id = file.id, name = file.displayName, dateText = FormatUtils.formatDate(file.createdAt), sizeText = FormatUtils.formatSize(file.sizeBytes), iconRes = getIconForMimeType(file.mimeType), timestamp = file.createdAt, sizeBytes = file.sizeBytes))
                 }
 
                 val currentSortOrder = _sortOrder.value
                 when (currentSortOrder) {
-                    SortOrder.NEWEST_FIRST -> items.sortedByDescending { it.timestamp }
-                    SortOrder.NAME_A_Z -> items.sortedBy { it.name.lowercase() }
-                    SortOrder.NAME_Z_A -> items.sortedByDescending { it.name.lowercase() }
-                    SortOrder.LARGEST_FIRST -> items.sortedByDescending { it.sizeBytes }
-                    SortOrder.SMALLEST_FIRST -> items.sortedBy { it.sizeBytes }
+                    com.zerogram.core.ui.components.SortOrder.NEWEST_FIRST -> items.sortedByDescending { it.timestamp }
+                    com.zerogram.core.ui.components.SortOrder.NAME_A_Z -> items.sortedBy { it.name.lowercase() }
+                    com.zerogram.core.ui.components.SortOrder.NAME_Z_A -> items.sortedByDescending { it.name.lowercase() }
+                    com.zerogram.core.ui.components.SortOrder.LARGEST_FIRST -> items.sortedByDescending { it.sizeBytes }
+                    com.zerogram.core.ui.components.SortOrder.SMALLEST_FIRST -> items.sortedBy { it.sizeBytes }
                 }
             }
         }
@@ -182,7 +155,7 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    private suspend fun copyFolderRecursive(folder: com.example.zerogram.data.local.entity.FolderEntity, newParentId: String?): Int {
+    private suspend fun copyFolderRecursive(folder: com.zerogram.data.local.entity.FolderEntity, newParentId: String?): Int {
         var count = 1
         val newFolderId = UUID.randomUUID().toString()
         val newFolder = folder.copy(
@@ -227,7 +200,7 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    fun getSelectionDetails(onResult: (SelectionDetails) -> Unit) {
+    fun getSelectionDetails(onResult: (com.zerogram.core.ui.components.SelectionDetails) -> Unit) {
         viewModelScope.launch {
             val selectedIds = _selectedItems.value.toList()
             if (selectedIds.isEmpty()) return@launch
@@ -236,7 +209,7 @@ class SearchViewModel @Inject constructor(
 
             if (selectedFilesAndFolders.size == 1) {
                 val item = selectedFilesAndFolders.first()
-                if (item.isFolder) {
+                if (item is AppListItem.Folder) {
                     val folderEntity = database.folderDao().getFolderById(item.id)
                     val stats = database.folderDao().getFolderSubtreeStats(item.id)
                     val itemsText = buildString {
@@ -250,7 +223,7 @@ class SearchViewModel @Inject constructor(
                         SelectionDetails(
                             title = "Details",
                             name = folderEntity?.name ?: item.name,
-                            dateModified = folderEntity?.let { FormatUtils.formatDate(it.createdAt) } ?: item.date,
+                            dateModified = folderEntity?.let { FormatUtils.formatDate(it.createdAt) } ?: if (item is AppListItem.File) item.dateText else (item as AppListItem.Folder).dateText,
                             sizeText = FormatUtils.formatSize(stats.totalSize),
                             itemsText = itemsText,
                             location = getPathForFolder(folderEntity?.parentId),
@@ -259,8 +232,10 @@ class SearchViewModel @Inject constructor(
                     )
                 } else {
                     val fileEntity = database.fileDao().getFileById(item.id)
-                    val formattedDate = fileEntity?.let { FormatUtils.formatDate(it.createdAt) } ?: item.date
-                    val formattedSize = fileEntity?.sizeBytes?.let { FormatUtils.formatSize(it) } ?: item.size
+                    val itemDateText = if (item is AppListItem.File) item.dateText else (item as AppListItem.Folder).dateText
+            val itemSizeText = if (item is AppListItem.File) item.sizeText else ""
+            val formattedDate = fileEntity?.let { FormatUtils.formatDate(it.createdAt) } ?: itemDateText
+            val formattedSize = fileEntity?.sizeBytes?.let { FormatUtils.formatSize(it) } ?: itemSizeText
                     onResult(
                         SelectionDetails(
                             title = "Details",
@@ -278,7 +253,7 @@ class SearchViewModel @Inject constructor(
                 var totalFiles = 0
                 var totalFolders = 0
 
-                val folderIds = selectedFilesAndFolders.filter { it.isFolder }.map { it.id }
+                val folderIds = selectedFilesAndFolders.filterIsInstance<AppListItem.Folder>().map { it.id }
                 if (folderIds.isNotEmpty()) {
                     totalFolders += folderIds.size
                     val stats = database.folderDao().getAggregateFolderSubtreeStats(folderIds)
@@ -288,7 +263,7 @@ class SearchViewModel @Inject constructor(
                 }
 
                 for (item in selectedFilesAndFolders) {
-                    if (!item.isFolder) {
+                    if (item is AppListItem.File) {
                         totalFiles++
                         totalSize += item.sizeBytes
                     }
@@ -345,7 +320,7 @@ class SearchViewModel @Inject constructor(
                 if (existingDownloadJob == null) {
                     val jobId = UUID.randomUUID().toString()
                     val now = System.currentTimeMillis()
-                    val jobEntity = com.example.zerogram.data.local.entity.TransferJobEntity(
+                    val jobEntity = com.zerogram.data.local.entity.TransferJobEntity(
                         id = jobId,
                         fileId = fileId,
                         type = "download",
@@ -358,7 +333,12 @@ class SearchViewModel @Inject constructor(
                         updatedAt = now
                     )
                     database.transferJobDao().insertJob(jobEntity)
-                    com.example.zerogram.service.TransferService.startService(context)
+                    val intent = android.content.Intent().apply { setClassName(context.packageName, "com.zerogram.service.TransferService") }
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
                     _uiEvents.emit("Download started for ${fileEntity.displayName}")
                 }
             }

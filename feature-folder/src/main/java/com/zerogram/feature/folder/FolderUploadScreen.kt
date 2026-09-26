@@ -1,4 +1,4 @@
-package com.example.zerogram.ui.folder
+package com.zerogram.feature.folder
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -15,7 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.zerogram.util.ScanOptions
+import com.zerogram.util.ScanOptions
 import java.util.Locale
 
 private val BackgroundColor = Color(0xFF1E1E1E)
