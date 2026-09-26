@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Expose the public Downloads directory so the FileProvider can share downloaded files -->
+    <external-path name="public_downloads" path="Download/" />
+    
+    <!-- Expose internal cache just in case we need to share temporary files later -->
+    <cache-path name="internal_cache" path="." />
+</paths>

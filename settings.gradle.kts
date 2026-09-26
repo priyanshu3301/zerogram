@@ -24,6 +24,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "Zerogram 3.0"
 include(":app")
+include(":tdlib")
 include(":core-tdlib")
 include(":core-data")
 include(":core-ui")

@@ -1,0 +1,152 @@
+<animated-vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+
+    <aapt:attr name="android:drawable">
+        <vector
+            android:width="512dp"
+            android:height="512dp"
+            android:viewportWidth="512"
+            android:viewportHeight="512">
+
+            <!-- Base Tile Background Gradient -->
+            <path
+                android:pathData="M112,0H400A112,112 0,0 1,512 112V400A112,112 0,0 1,400 512H112A112,112 0,0 1,0 400V112A112,112 0,0 1,112 0Z">
+                <aapt:attr name="android:fillColor">
+                    <gradient
+                        android:startX="256"
+                        android:startY="0"
+                        android:endX="256"
+                        android:endY="512"
+                        android:type="linear">
+                        <item android:color="#FFC2E5FF" android:offset="0.0" />
+                        <item android:color="#FF9AD0FC" android:offset="0.35" />
+                        <item android:color="#FF70B8F8" android:offset="0.70" />
+                        <item android:color="#FF55A4F5" android:offset="1.0" />
+                    </gradient>
+                </aapt:attr>
+            </path>
+
+            <!-- Bottom Glow Overlay -->
+            <path
+                android:pathData="M 0,380 Q 256,430 512,380 L 512,512 L 0,512 Z"
+                android:fillColor="#4B96EA"
+                android:fillAlpha="0.4" />
+
+            <!-- Cloud Background (Animated Scale/Alpha) -->
+            <group
+                android:name="cloudGroup"
+                android:pivotX="256"
+                android:pivotY="255">
+                <path
+                    android:pathData="M 180,330 H 338 A 62,62 0 0,0 398,260 A 58,58 0 0,0 348,188 A 90,90 0 0,0 182,180 A 68,68 0 0,0 114,258 A 62,62 0 0,0 180,330 Z">
+                    <aapt:attr name="android:fillColor">
+                        <gradient
+                            android:startX="256"
+                            android:startY="180"
+                            android:endX="256"
+                            android:endY="330"
+                            android:type="linear">
+                            <item android:color="#F2FFFFFF" android:offset="0.0" />
+                            <item android:color="#E6EFF7FF" android:offset="0.6" />
+                            <item android:color="#D9D3E8FD" android:offset="1.0" />
+                        </gradient>
+                    </aapt:attr>
+                </path>
+            </group>
+
+            <!-- Glassmorphic Folder (Animated Translation Y) -->
+            <group android:name="folderGroup">
+                <path
+                    android:pathData="M 172,216 H 232 C 244,216 250,222 258,230 L 268,240 C 274,246 280,248 290,248 H 340 C 362,248 376,262 376,284 V 348 C 376,370 362,384 340,384 H 172 C 150,384 136,370 136,348 V 252 C 136,230 150,216 172,216 Z"
+                    android:strokeWidth="3"
+                    android:strokeColor="#E6FFFFFF">
+                    <aapt:attr name="android:fillColor">
+                        <gradient
+                            android:startX="256"
+                            android:startY="216"
+                            android:endX="256"
+                            android:endY="384"
+                            android:type="linear">
+                            <item android:color="#8CFFFFFF" android:offset="0.0" />
+                            <item android:color="#59E1F0FF" android:offset="0.5" />
+                            <item android:color="#73BDE0FE" android:offset="1.0" />
+                        </gradient>
+                    </aapt:attr>
+                </path>
+            </group>
+
+            <!-- Padlock Anchor Group -->
+            <group android:name="lockGroup">
+                <!-- Shackle (Animated Locking Movement down) -->
+                <group android:name="shackleGroup">
+                    <path
+                        android:pathData="M 232,298 V 276 A 24,24 0 0,1 280,276 V 298"
+                        android:strokeColor="#FFFFFF"
+                        android:strokeWidth="11"
+                        android:strokeLineCap="round" />
+                </group>
+
+                <!-- Lock Body -->
+                <path
+                    android:pathData="M 235,295 H 277 A 14,14 0 0,1 291,309 V 339 A 14,14 0 0,1 277,353 H 235 A 14,14 0 0,1 221,339 V 309 A 14,14 0 0,1 235,295 Z"
+                    android:fillColor="#FFFFFFFF" />
+
+                <!-- Keyhole -->
+                <path
+                    android:pathData="M 256,313 A 5,5 0 1,0 256,323 A 5,5 0 1,0 256,313 Z M 253.5,318 L 258.5,318 L 260,334 L 252,334 Z"
+                    android:fillColor="#60A5FA" />
+            </group>
+
+        </vector>
+    </aapt:attr>
+
+    <!-- 1. Cloud Scale & Entrance Animation -->
+    <target android:name="cloudGroup">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:propertyName="scaleX"
+                    android:duration="1000"
+                    android:valueFrom="0.85"
+                    android:valueTo="1.0"
+                    android:valueType="floatType"
+                    android:interpolator="@android:interpolator/fast_out_slow_in" />
+                <objectAnimator
+                    android:propertyName="scaleY"
+                    android:duration="1000"
+                    android:valueFrom="0.85"
+                    android:valueTo="1.0"
+                    android:valueType="floatType"
+                    android:interpolator="@android:interpolator/fast_out_slow_in" />
+            </set>
+        </aapt:attr>
+    </target>
+
+    <!-- 2. Folder Elevation Animation -->
+    <target android:name="folderGroup">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:propertyName="translateY"
+                android:duration="1000"
+                android:valueFrom="15"
+                android:valueTo="0"
+                android:valueType="floatType"
+                android:interpolator="@android:interpolator/fast_out_slow_in" />
+        </aapt:attr>
+    </target>
+
+    <!-- 3. Lock Shackle "Closing" Snap Effect -->
+    <target android:name="shackleGroup">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:propertyName="translateY"
+                android:duration="1000"
+                android:valueFrom="-12"
+                android:valueTo="0"
+                android:valueType="floatType"
+                android:interpolator="@android:interpolator/bounce" />
+        </aapt:attr>
+    </target>
+
+</animated-vector>
