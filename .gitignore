@@ -1,0 +1,21 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+/zerogram 2.0
+.DS_Store
+/build
+/captures
+/ui need
+.externalNativeBuild
+.cxx
+local.properties
+/tdlib
+*.apk
+*.aab
+*.zip
