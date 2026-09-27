@@ -1,5 +1,6 @@
 package com.zerogram.startup
 
+import android.annotation.SuppressLint
 import android.content.Context
 import androidx.startup.Initializer
 import com.zerogram.domain.repository.ITelegramRepository
@@ -21,6 +22,7 @@ interface StartupEntryPoint {
 /**
  * Initializes TDLib asynchronously. Depends on CoreInitializer.
  */
+@SuppressLint("EnsureInitializerMetadata")
 class TDLibInitializer : Initializer<ITelegramRepository> {
 
     override fun create(context: Context): ITelegramRepository {
