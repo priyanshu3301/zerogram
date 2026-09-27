@@ -59,3 +59,5 @@ _deps
 *.apk
 *.aab
 *.zip
+log.html
+benchmark-results/
