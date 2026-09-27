@@ -56,6 +56,7 @@ _deps
 /zerogram 2.0/
 /ui need/
 /tdlib/
+/temp/
 *.apk
 *.aab
 *.zip
