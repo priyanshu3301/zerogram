@@ -68,11 +68,12 @@ fun SearchScreen(
         }
     }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize().background(BackgroundColor),
-        containerColor = BackgroundColor,
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        topBar = {
+    val renderer = remember(
+        isSelectionMode, selectedItems, searchQuery, sortOrder
+    ) {
+        object : com.zerogram.core.ui.scaffold.ScaffoldRenderer {
+            @Composable
+            override fun TopBar() {
             Column(modifier = Modifier.fillMaxWidth().background(BackgroundColor)) {
                 if (isSelectionMode) {
                     TopAppBar(
@@ -175,8 +176,10 @@ fun SearchScreen(
                     )
                 }
             }
-        },
-        bottomBar = {
+            } // Close TopBar
+
+            @Composable
+            override fun BottomBar() {
             if (isSelectionMode) {
                 var showMoreMenu by remember { mutableStateOf(false) }
                 BottomAppBar(
@@ -247,18 +250,23 @@ fun SearchScreen(
                     }
                 }
             }
+            }
         }
-    ) { paddingValues ->
+    }
+
+    com.zerogram.core.ui.scaffold.ScreenScaffoldConfig(renderer)
+
+    Box(modifier = Modifier.fillMaxSize().background(BackgroundColor)) {
         if (searchQuery.isBlank()) {
-            Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text("Type to search", color = TextSecondary, fontSize = 16.sp)
             }
         } else if (filesAndFolders.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text("No matching items found", color = TextSecondary, fontSize = 16.sp)
             }
         } else {
-            Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            Box(modifier = Modifier.fillMaxSize()) {
                 AppList(
                     items = ImmutableListWrapper(filesAndFolders),
                     selectedItems = selectedItems,
@@ -277,6 +285,10 @@ fun SearchScreen(
                     }
                 )
             }
+        }
+
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+            SnackbarHost(hostState = snackbarHostState)
         }
     }
 

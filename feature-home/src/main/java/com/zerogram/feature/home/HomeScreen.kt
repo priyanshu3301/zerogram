@@ -88,15 +88,13 @@ fun HomeScreen(
         }
     }
 
-    Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
-            .background(MaterialTheme.colorScheme.background),
-        containerColor = MaterialTheme.colorScheme.background,
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        topBar = {
-            if (pagerState.currentPage == 0) {
+    var expanded by remember { mutableStateOf(false) }
+
+    val renderer = remember(pagerState.currentPage, vaultName, scrollBehavior, deletedStats, expanded, totalStorageString) {
+        object : com.zerogram.core.ui.scaffold.ScaffoldRenderer {
+            @Composable
+            override fun TopBar() {
+                if (pagerState.currentPage == 0) {
                 Box {
                     LargeTopAppBar(
                         title = {
@@ -107,7 +105,6 @@ fun HomeScreen(
                             IconButton(onClick = onSearchClick) {
                                 Icon(painter = painterResource(id = R.drawable.ic_thin_search), contentDescription = "Search", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(24.dp))
                             }
-                            var expanded by remember { mutableStateOf(false) }
                             Box {
                                 IconButton(onClick = { expanded = true }) {
                                     Icon(Icons.Default.MoreVert, contentDescription = "More", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(28.dp))
@@ -164,51 +161,62 @@ fun HomeScreen(
                             }
                     )
                 }
+                } // End if (pagerState.currentPage == 0)
             }
-        },
-        bottomBar = {
-            Column(modifier = Modifier.background(MaterialTheme.colorScheme.background).windowInsetsPadding(WindowInsets.navigationBars)) {
-                // Custom Navigation Bar to replicate TabRow-style indicator
-                TabRow(
-                    selectedTabIndex = pagerState.currentPage,
-                    modifier = Modifier.height(64.dp),
-                    containerColor = MaterialTheme.colorScheme.background,
-                    contentColor = MaterialTheme.colorScheme.onBackground,
-                    indicator = { tabPositions ->
-                        Box(
-                            modifier = Modifier
-                                .tabIndicatorOffset(tabPositions[pagerState.currentPage])
-                                .height(3.dp)
-                                .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
+
+            @Composable
+            override fun BottomBar() {
+                Column(modifier = Modifier.background(MaterialTheme.colorScheme.background).windowInsetsPadding(WindowInsets.navigationBars)) {
+                    // Custom Navigation Bar to replicate TabRow-style indicator
+                    TabRow(
+                        selectedTabIndex = pagerState.currentPage,
+                        modifier = Modifier.height(64.dp),
+                        containerColor = MaterialTheme.colorScheme.background,
+                        contentColor = MaterialTheme.colorScheme.onBackground,
+                        indicator = { tabPositions ->
+                            Box(
+                                modifier = Modifier
+                                    .tabIndicatorOffset(tabPositions[pagerState.currentPage])
+                                    .height(3.dp)
+                                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
+                            )
+                        },
+                        divider = {}
+                    ) {
+                        Tab(
+                            selected = pagerState.currentPage == 0,
+                            onClick = { coroutineScope.launch { pagerState.scrollToPage(0) } },
+                            selectedContentColor = MaterialTheme.colorScheme.onBackground,
+                            unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            text = { Text("Files") },
+                            icon = { Icon(Icons.Default.Folder, contentDescription = "Files", modifier = Modifier.size(24.dp)) }
                         )
-                    },
-                    divider = {}
-                ) {
-                    Tab(
-                        selected = pagerState.currentPage == 0,
-                        onClick = { coroutineScope.launch { pagerState.scrollToPage(0) } },
-                        selectedContentColor = MaterialTheme.colorScheme.onBackground,
-                        unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        text = { Text("Files") },
-                        icon = { Icon(Icons.Default.Folder, contentDescription = "Files", modifier = Modifier.size(24.dp)) }
-                    )
-                    Tab(
-                        selected = pagerState.currentPage == 1,
-                        onClick = { coroutineScope.launch { pagerState.scrollToPage(1) } },
-                        selectedContentColor = MaterialTheme.colorScheme.onBackground,
-                        unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        text = { Text("Transfers") },
-                        icon = { Icon(Icons.Outlined.SwapVert, contentDescription = "Transfers", modifier = Modifier.size(24.dp)) }
-                    )
+                        Tab(
+                            selected = pagerState.currentPage == 1,
+                            onClick = { coroutineScope.launch { pagerState.scrollToPage(1) } },
+                            selectedContentColor = MaterialTheme.colorScheme.onBackground,
+                            unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            text = { Text("Transfers") },
+                            icon = { Icon(Icons.Outlined.SwapVert, contentDescription = "Transfers", modifier = Modifier.size(24.dp)) }
+                        )
+                    }
                 }
             }
-        },
-    ) { paddingValues ->
+        }
+    }
+    
+    com.zerogram.core.ui.scaffold.ScreenScaffoldConfig(renderer)
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         HorizontalPager(
             state = pagerState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = paddingValues.calculateBottomPadding())
         ) { page ->
             when (page) {
                 0 -> HomeFilesContent(
@@ -217,8 +225,7 @@ fun HomeScreen(
                     deletedStats = deletedStats,
                     onStorageClick = onStorageClick, 
                     onCategoryClick = onCategoryClick,
-                    onRecentlyDeletedClick = onRecentlyDeletedClick,
-                    topPadding = paddingValues.calculateTopPadding()
+                    onRecentlyDeletedClick = onRecentlyDeletedClick
                 )
                 1 -> com.zerogram.feature.transfers.TransfersScreen(
                     onNavigateBack = { coroutineScope.launch { pagerState.animateScrollToPage(0) } },
@@ -236,12 +243,11 @@ fun HomeFilesContent(
     deletedStats: String,
     onStorageClick: () -> Unit = {},
     onCategoryClick: (String) -> Unit = {},
-    onRecentlyDeletedClick: () -> Unit = {},
-    topPadding: androidx.compose.ui.unit.Dp = 0.dp
+    onRecentlyDeletedClick: () -> Unit = {}
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(top = topPadding, bottom = 16.dp)
+        contentPadding = PaddingValues(top = 16.dp, bottom = 16.dp)
     ) {
         item {
             StorageCard(

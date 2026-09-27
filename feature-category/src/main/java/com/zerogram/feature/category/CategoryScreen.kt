@@ -123,14 +123,13 @@ fun CategoryScreen(
         }
     }
 
-    Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .then(modifier)
-            .background(BackgroundColor),
-        containerColor = BackgroundColor,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
+    val renderer = remember(
+        isSelectionMode, selectedItems, filesAndFolders, searchQuery,
+        categoryName, sortOrder
+    ) {
+        object : com.zerogram.core.ui.scaffold.ScaffoldRenderer {
+            @Composable
+            override fun TopBar() {
             if (isSelectionMode) {
                 val allSelected = selectedItems.size == filesAndFolders.size && filesAndFolders.isNotEmpty()
                 TopAppBar(
@@ -268,8 +267,10 @@ fun CategoryScreen(
                     )
                 )
             }
-        },
-        bottomBar = {
+            } // Close TopBar
+
+            @Composable
+            override fun BottomBar() {
             if (isSelectionMode) {
                 var showMoreMenu by remember { mutableStateOf(false) }
                 BottomAppBar(
@@ -340,10 +341,20 @@ fun CategoryScreen(
                     }
                 }
             }
+            }
         }
-    ) { paddingValues ->
+    }
+
+    com.zerogram.core.ui.scaffold.ScreenScaffoldConfig(renderer)
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .then(modifier)
+            .background(BackgroundColor)
+    ) {
         val displayItems = if (isTransitionFinished) filesAndFolders else emptyList()
-        Box(modifier = Modifier.fillMaxSize().padding(paddingValues).then(listModifier)) {
+        Box(modifier = Modifier.fillMaxSize().then(listModifier)) {
             AppList(
                 items = ImmutableListWrapper(displayItems),
                 selectedItems = selectedItems,
@@ -364,6 +375,10 @@ fun CategoryScreen(
                     }
                 }
             )
+        }
+
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+            SnackbarHost(snackbarHostState)
         }
     }
 

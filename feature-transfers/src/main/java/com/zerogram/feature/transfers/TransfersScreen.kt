@@ -74,13 +74,12 @@ fun TransfersScreen(
         }
     }
 
-    Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(BackgroundColor),
-        containerColor = BackgroundColor,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
+    val renderer = remember(
+        selectedTabIndex, activeType, currentJobs, selectedJobIds, showBulkRemoveDialog
+    ) {
+        object : com.zerogram.core.ui.scaffold.ScaffoldRenderer {
+            @Composable
+            override fun TopBar() {
             if (selectedJobIds.isNotEmpty()) {
                 val allSelected = selectedJobIds.size == currentJobs.size && currentJobs.isNotEmpty()
                 TopAppBar(
@@ -156,11 +155,16 @@ fun TransfersScreen(
                 )
             }
         }
-    ) { paddingValues ->
+    }
+    }
+
+    com.zerogram.core.ui.scaffold.ScreenScaffoldConfig(renderer)
+
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .background(BackgroundColor)
         ) {
             TabRow(
                 selectedTabIndex = selectedTabIndex,
@@ -216,6 +220,10 @@ fun TransfersScreen(
                 onGetLocationPath = { fileId, type -> viewModel.getLocationPath(fileId, type) },
                 onNavigateToFolder = onNavigateToFolder
             )
+        }
+        
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+            SnackbarHost(snackbarHostState)
         }
     }
 
