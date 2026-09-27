@@ -39,14 +39,7 @@ jobs:
           target: aosp_atd
           arch: x86_64
           profile: pixel_6
-          script: |
-            ./gradlew :baselineprofile:connectedCheck --info || {
-              echo "--- TEST RESULTS ---"
-              find baselineprofile/build/outputs/androidTest-results -name "*.xml" -exec cat {} +
-              echo "--- LOGCAT ---"
-              adb logcat -d -t 1000
-              exit 1
-            }
+          script: ./gradlew :baselineprofile:connectedCheck --info || (echo "--- TEST RESULTS ---" && find baselineprofile/build/outputs/androidTest-results -name "*.xml" -exec cat {} + && echo "--- LOGCAT ---" && adb logcat -d -t 1000 && exit 1)
 
       - name: Assert Cold Start Time
         run: |
