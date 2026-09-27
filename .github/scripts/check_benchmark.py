@@ -50,6 +50,21 @@ def main():
                     print(f"SUCCESS: Cold start time is within the {threshold_ms} ms threshold.")
             else:
                 print(f"WARNING: No timeToInitialDisplayMs found for benchmark '{name}'.")
+        elif "scroll" in name.lower():
+            metrics = benchmark.get("metrics", {})
+            frame_overrun = metrics.get("frameOverrunMs", {})
+            median = frame_overrun.get("median")
+            
+            jank_threshold_ms = 16.0
+            if median is not None:
+                print(f"Benchmark '{name}': Median frameOverrunMs = {median} ms")
+                if median > jank_threshold_ms:
+                    print(f"ERROR: Scroll jank ({median} ms) exceeds the threshold of {jank_threshold_ms} ms!")
+                    failed = True
+                else:
+                    print(f"SUCCESS: Scroll jank is within the {jank_threshold_ms} ms threshold.")
+            else:
+                print(f"WARNING: No frameOverrunMs found for benchmark '{name}'.")
 
     if failed:
         sys.exit(1)
