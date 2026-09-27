@@ -28,7 +28,7 @@ jobs:
         with:
           api-level: 33
           target: aosp_atd
-          arch: x86_64
+          arch: arm64-v8a
           profile: pixel_6
           script: ./gradlew :baselineprofile:connectedCheck
 
