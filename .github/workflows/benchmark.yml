@@ -39,7 +39,16 @@ jobs:
           target: aosp_atd
           arch: x86_64
           profile: pixel_6
-          script: ./gradlew :baselineprofile:connectedCheck --info || (echo "--- TEST RESULTS ---" && find baselineprofile/build/outputs/androidTest-results -name "*.xml" -exec cat {} + && echo "--- LOGCAT ---" && adb logcat -d -t 1000 && exit 1)
+          script: ./gradlew :baselineprofile:connectedCheck --info || (adb logcat -d > logcat.txt && exit 1)
+
+      - name: Upload Test Results and Logcat
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: |
+            logcat.txt
+            baselineprofile/build/outputs/androidTest-results/
 
       - name: Assert Cold Start Time
         run: |
