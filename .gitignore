@@ -55,7 +55,6 @@ _deps
 # Custom Project Files
 /zerogram 2.0/
 /ui need/
-/tdlib/
 /temp/
 *.apk
 *.aab
