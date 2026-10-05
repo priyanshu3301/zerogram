@@ -173,8 +173,8 @@ class TransfersViewModel @Inject constructor(
                         // If it's a download, we clean up the partial/completed cached copy.
                         // If it's an upload, we clean up any cached copy TDLib created.
                         val tFileId = file.telegramFileId
-                                    if (tFileId != null) {
-                                        val cleanupResult = telegramRepository.deleteLocalFile(tFileId)
+                        if (tFileId != null) {
+                            val cleanupResult = telegramRepository.deleteLocalFile(tFileId)
                             if (cleanupResult is AppResult.Failure) {
                                 SecureLogger.e("TransfersViewModel", "Failed to clean up file cache on removal: ${cleanupResult.error.message}")
                             } else {
