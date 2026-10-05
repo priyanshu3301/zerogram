@@ -1,0 +1,60 @@
+# Gradle files
+.gradle/
+build/
+*/build/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Log Files
+*.log
+
+# Android Studio Navigation editor temp files
+.navigation/
+
+# Android Studio captures folder
+captures/
+
+# IntelliJ
+*.iml
+.idea/
+!.idea/codeStyles/
+!.idea/dictionaries/
+!.idea/inspectionProfiles/
+!.idea/vcs.xml
+!.idea/icon.png
+!.idea/runConfigurations/
+
+# Keystore files
+*.jks
+*.keystore
+
+# External native build folder generated in Android Studio 2.2 and later
+.externalNativeBuild/
+.cxx/
+
+# NDK
+obj/
+
+# CMake
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+
+# macOS
+.DS_Store
+
+# Custom Project Files
+/zerogram 2.0/
+/ui need/
+/temp/
+*.apk
+*.aab
+*.zip
