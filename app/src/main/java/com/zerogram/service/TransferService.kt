@@ -51,11 +51,7 @@ class TransferService : Service() {
 
         fun startService(context: Context) {
             val startIntent = Intent(context, TransferService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(startIntent)
-            } else {
-                context.startService(startIntent)
-            }
+            context.startForegroundService(startIntent)
         }
     }
 
@@ -65,9 +61,7 @@ class TransferService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForeground(NOTIFICATION_ID, createNotification("Checking transfers...", 0))
-        }
+        startForeground(NOTIFICATION_ID, createNotification("Checking transfers...", 0))
         serviceScope.launch {
             processingMutex.withLock {
                 checkAndStartJobs()
@@ -180,11 +174,7 @@ class TransferService : Service() {
     }
 
     private fun stopForegroundServiceAndSelf() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            stopForeground(STOP_FOREGROUND_REMOVE)
-        } else {
-            stopForeground(true)
-        }
+        stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
 
@@ -568,15 +558,13 @@ class TransferService : Service() {
     }
 
     private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val serviceChannel = NotificationChannel(
-                CHANNEL_ID,
-                "Transfers",
-                NotificationManager.IMPORTANCE_LOW
-            )
-            val manager = getSystemService(NotificationManager::class.java)
-            manager?.createNotificationChannel(serviceChannel)
-        }
+        val serviceChannel = NotificationChannel(
+            CHANNEL_ID,
+            "Transfers",
+            NotificationManager.IMPORTANCE_LOW
+        )
+        val manager = getSystemService(NotificationManager::class.java)
+        manager?.createNotificationChannel(serviceChannel)
     }
 
     private fun createNotification(content: String, progress: Int): Notification {

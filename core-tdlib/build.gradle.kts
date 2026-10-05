@@ -8,7 +8,7 @@ android {
     namespace = "com.zerogram.core.tdlib"
     compileSdk = 35
     defaultConfig {
-        minSdk = 29
+        minSdk = 30
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

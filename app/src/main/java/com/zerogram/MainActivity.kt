@@ -110,20 +110,16 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge(
             navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
         )
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (!android.os.Environment.isExternalStorageManager()) {
-                val intent = android.content.Intent(android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
-                    data = android.net.Uri.parse("package:${packageName}")
-                }
-                startActivity(intent)
+        if (!android.os.Environment.isExternalStorageManager()) {
+            val intent = android.content.Intent(android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
+                data = android.net.Uri.parse("package:${packageName}")
             }
+            startActivity(intent)
         }
         // Force highest supported refresh rate (120Hz if available)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            display?.supportedModes?.maxByOrNull { it.refreshRate }?.let { mode ->
-                window.attributes = window.attributes.apply {
-                    preferredDisplayModeId = mode.modeId
-                }
+        display?.supportedModes?.maxByOrNull { it.refreshRate }?.let { mode ->
+            window.attributes = window.attributes.apply {
+                preferredDisplayModeId = mode.modeId
             }
         }
         

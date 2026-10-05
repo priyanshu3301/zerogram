@@ -114,11 +114,7 @@ class VaultSelectionViewModel @Inject constructor(
                 is AppResult.Success -> {
                     _actionState.value = VaultActionState.VaultUnlocked
                     val intent = android.content.Intent().apply { setClassName(context.packageName, "com.zerogram.service.TransferService") }
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
-            }
+            context.startForegroundService(intent)
                 }
                 is AppResult.Failure -> {
                     _actionState.value = VaultActionState.UnlockFailed(result.error.message)

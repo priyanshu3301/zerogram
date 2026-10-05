@@ -60,11 +60,7 @@ class TransfersViewModel @Inject constructor(
             // Setting it to queued will allow TransferService to pick it up again
             database.transferJobDao().updateJobStatus(jobId, "queued")
             val intent = android.content.Intent().apply { setClassName(context.packageName, "com.zerogram.service.TransferService") }
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
-            }
+            context.startForegroundService(intent)
         }
     }
 
@@ -98,11 +94,7 @@ class TransfersViewModel @Inject constructor(
                 currentStatuses = listOf("paused", "failed", "canceled")
             )
             val intent = android.content.Intent().apply { setClassName(context.packageName, "com.zerogram.service.TransferService") }
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
-            }
+            context.startForegroundService(intent)
             _uiEvents.emit("Resumed all $type transfers")
         }
     }
@@ -128,11 +120,7 @@ class TransfersViewModel @Inject constructor(
         viewModelScope.launch {
             database.transferJobDao().updateJobStatuses(jobIds.toList(), "queued")
             val intent = android.content.Intent().apply { setClassName(context.packageName, "com.zerogram.service.TransferService") }
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
-            }
+            context.startForegroundService(intent)
             _uiEvents.emit("Resumed ${jobIds.size} transfers")
         }
     }

@@ -199,11 +199,7 @@ class FolderUploadViewModel @Inject constructor(
                 }
 
                 val intent = android.content.Intent().apply { setClassName(context.packageName, "com.zerogram.service.TransferService") }
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
-            }
+            context.startForegroundService(intent)
                 _uiState.value = FolderUploadState.Idle
 
             } catch (e: Exception) {

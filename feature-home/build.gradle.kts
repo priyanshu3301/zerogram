@@ -9,7 +9,7 @@ android {
     namespace = "com.zerogram.feature.home"
     compileSdk = 35
     defaultConfig {
-        minSdk = 29
+        minSdk = 30
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

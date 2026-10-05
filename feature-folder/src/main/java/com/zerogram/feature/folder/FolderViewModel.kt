@@ -229,11 +229,7 @@ class FolderViewModel @Inject constructor(
                 database.fileDao().insertFile(fileEntity)
                 database.transferJobDao().insertJob(jobEntity)
                 val intent = android.content.Intent().apply { setClassName(context.packageName, "com.zerogram.service.TransferService") }
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
-            }
+            context.startForegroundService(intent)
             }
         }
     }
@@ -272,11 +268,7 @@ class FolderViewModel @Inject constructor(
                     
                     // Wake up TransferService
                     val intent = android.content.Intent().apply { setClassName(context.packageName, "com.zerogram.service.TransferService") }
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
-            }
+            context.startForegroundService(intent)
                     
                     _uiEvents.emit("Download started for ${fileEntity.displayName}")
                 } else if (existingDownloadJob.status == "completed") {
