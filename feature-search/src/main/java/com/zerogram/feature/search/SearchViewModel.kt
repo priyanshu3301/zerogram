@@ -233,9 +233,9 @@ class SearchViewModel @Inject constructor(
                 } else {
                     val fileEntity = database.fileDao().getFileById(item.id)
                     val itemDateText = if (item is AppListItem.File) item.dateText else (item as AppListItem.Folder).dateText
-            val itemSizeText = if (item is AppListItem.File) item.sizeText else ""
-            val formattedDate = fileEntity?.let { FormatUtils.formatDate(it.createdAt) } ?: itemDateText
-            val formattedSize = fileEntity?.sizeBytes?.let { FormatUtils.formatSize(it) } ?: itemSizeText
+                    val itemSizeText = if (item is AppListItem.File) item.sizeText else ""
+                    val formattedDate = fileEntity?.let { FormatUtils.formatDate(it.createdAt) } ?: itemDateText
+                    val formattedSize = fileEntity?.sizeBytes?.let { FormatUtils.formatSize(it) } ?: itemSizeText
                     onResult(
                         SelectionDetails(
                             title = "Details",
