@@ -11,6 +11,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.overscroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.icons.Icons
@@ -136,15 +137,17 @@ fun TransfersScreen(
                                 AppDropdownMenu(
                                     expanded = showMoreMenu,
                                     onDismissRequest = { showMoreMenu = false },
-                                    modifier = Modifier.width(180.dp).background(SurfaceColor),
-                                    shape = MaterialTheme.shapes.medium
+                                    modifier = Modifier.width(220.dp),
+                                    shape = MaterialTheme.shapes.medium,
+                                    containerColor = SurfaceColor
                                 ) {
                                     AppDropdownMenuItem(
-                                        text = { Text("Clear completed", color = TextPrimary, fontSize = 15.sp) },
+                                        text = { Text("Clear completed", color = TextPrimary, fontSize = 18.sp) },
                                         onClick = {
                                             showMoreMenu = false
                                             viewModel.clearCompleted(activeType)
-                                        }
+                                        },
+                                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                     )
                                 }
                             }
@@ -258,10 +261,19 @@ fun TransferListSection(
         val paused = jobs.filter { it.job.status == "paused" }
         val completedAndOthers = jobs.filter { it.job.status == "completed" || it.job.status == "failed" || it.job.status == "canceled" }
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(vertical = 8.dp)
-        ) {
+        val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+        val flingBehavior = com.zerogram.core.ui.scroll.rememberZerogramFlingBehavior()
+        val overscrollEffect = com.zerogram.core.ui.scroll.rememberSpringOverscrollEffect()
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .overscroll(overscrollEffect),
+                contentPadding = PaddingValues(vertical = 8.dp),
+                flingBehavior = flingBehavior
+            ) {
             if (inProgress.isNotEmpty()) {
                 item {
                     SectionHeader("IN PROGRESS (${inProgress.size})")
@@ -323,6 +335,13 @@ fun TransferListSection(
                         onNavigateToFolder = onNavigateToFolder
                     )
                 }
+            }
+        }
+            
+            if (jobs.size > 20) {
+                com.zerogram.core.ui.scroll.FastScroller(
+                    listState = listState
+                )
             }
         }
     }

@@ -112,7 +112,7 @@ fun HomeScreen(
                                 AppDropdownMenu(
                                     expanded = expanded,
                                     onDismissRequest = { expanded = false },
-                                    modifier = Modifier.width(160.dp),
+                                    modifier = Modifier.width(220.dp),
                                     shape = MaterialTheme.shapes.medium,
                                     containerColor = MaterialTheme.colorScheme.surface
                                 ) {

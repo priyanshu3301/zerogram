@@ -227,7 +227,13 @@ class MainActivity : ComponentActivity() {
                                     generatedKeyBase64 = decodedKey,
                                     onVaultCreated = {},
                                     onContinue = { 
-                                        viewModel.setVaultUnlocked()
+                                        if (viewModel.startDestination.value == "Home") {
+                                            navController.navigate(NavigationRoutes.HOME) {
+                                                popUpTo(0) { inclusive = true }
+                                            }
+                                        } else {
+                                            viewModel.setVaultUnlocked()
+                                        }
                                     },
                                     onNavigateBack = { navController.popBackStack() }
                                 )

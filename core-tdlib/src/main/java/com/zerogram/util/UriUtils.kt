@@ -12,11 +12,16 @@ object UriUtils {
         val isTreeUri = uri.path?.startsWith("/tree/") == true
         if (isTreeUri) {
             val docId = DocumentsContract.getTreeDocumentId(uri)
+            if (docId.startsWith("raw:")) {
+                return docId.substring(4)
+            }
             val split = docId.split(":")
             val type = split[0]
             if ("primary".equals(type, ignoreCase = true)) {
                 return Environment.getExternalStorageDirectory().toString() + "/" + split.getOrNull(1).orEmpty()
             } else {
+                val fallbackPath = getDataColumn(context, uri, null, null)
+                if (fallbackPath != null) return fallbackPath
                 return "/storage/$type/" + split.getOrNull(1).orEmpty()
             }
         }

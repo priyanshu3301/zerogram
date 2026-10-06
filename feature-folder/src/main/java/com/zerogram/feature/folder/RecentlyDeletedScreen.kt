@@ -167,56 +167,77 @@ fun RecentlyDeletedScreen(
                             }
                             AppDropdownMenu(
                                 expanded = showMenu,
-                                onDismissRequest = { showMenu = false }
+                                onDismissRequest = { showMenu = false },
+                                modifier = Modifier.width(220.dp),
+                                shape = MaterialTheme.shapes.medium,
+                                containerColor = SurfaceColor
                             ) {
                                 AppDropdownMenuItem(
-                                    text = { Text("Sort by Newest", color = TextPrimary, fontSize = 18.sp) },
+                                    text = { Text("Newest first", color = TextPrimary, fontSize = 18.sp) },
                                     onClick = {
                                         viewModel.setSortOrder(SortOrder.NEWEST_FIRST)
                                         showMenu = false
-                                    }
+                                    },
+                                    trailingIcon = if (sortOrder == SortOrder.NEWEST_FIRST) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
+                                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                 )
+                                HorizontalDivider(color = Color(0xFF333333), thickness = 1.dp)
                                 AppDropdownMenuItem(
-                                    text = { Text("Sort by Name (A-Z)", color = TextPrimary, fontSize = 18.sp) },
+                                    text = { Text("Name A-Z", color = TextPrimary, fontSize = 18.sp) },
                                     onClick = {
                                         viewModel.setSortOrder(SortOrder.NAME_A_Z)
                                         showMenu = false
-                                    }
+                                    },
+                                    trailingIcon = if (sortOrder == SortOrder.NAME_A_Z) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
+                                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                 )
+                                HorizontalDivider(color = Color(0xFF333333), thickness = 1.dp)
                                 AppDropdownMenuItem(
-                                    text = { Text("Sort by Name (Z-A)", color = TextPrimary, fontSize = 18.sp) },
+                                    text = { Text("Name Z-A", color = TextPrimary, fontSize = 18.sp) },
                                     onClick = {
                                         viewModel.setSortOrder(SortOrder.NAME_Z_A)
                                         showMenu = false
-                                    }
+                                    },
+                                    trailingIcon = if (sortOrder == SortOrder.NAME_Z_A) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
+                                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                 )
+                                HorizontalDivider(color = Color(0xFF333333), thickness = 1.dp)
                                 AppDropdownMenuItem(
-                                    text = { Text("Sort by Size (Largest)", color = TextPrimary, fontSize = 18.sp) },
+                                    text = { Text("Largest first", color = TextPrimary, fontSize = 18.sp) },
                                     onClick = {
                                         viewModel.setSortOrder(SortOrder.LARGEST_FIRST)
                                         showMenu = false
-                                    }
+                                    },
+                                    trailingIcon = if (sortOrder == SortOrder.LARGEST_FIRST) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
+                                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                 )
+                                HorizontalDivider(color = Color(0xFF333333), thickness = 1.dp)
                                 AppDropdownMenuItem(
-                                    text = { Text("Sort by Size (Smallest)", color = TextPrimary, fontSize = 18.sp) },
+                                    text = { Text("Smallest first", color = TextPrimary, fontSize = 18.sp) },
                                     onClick = {
                                         viewModel.setSortOrder(SortOrder.SMALLEST_FIRST)
                                         showMenu = false
-                                    }
+                                    },
+                                    trailingIcon = if (sortOrder == SortOrder.SMALLEST_FIRST) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF64B5F6)) } } else null,
+                                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                 )
+                                HorizontalDivider(color = Color(0xFF333333), thickness = 1.dp)
                                 AppDropdownMenuItem(
                                     text = { Text("Select Items", color = TextPrimary, fontSize = 18.sp) },
                                     onClick = {
                                         isSelectionMode = true
                                         showMenu = false
-                                    }
+                                    },
+                                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                 )
+                                HorizontalDivider(color = Color(0xFF333333), thickness = 1.dp)
                                 AppDropdownMenuItem(
                                     text = { Text("Empty Bin", color = TextPrimary, fontSize = 18.sp) },
                                     onClick = {
                                         viewModel.deleteAll()
                                         showMenu = false
-                                    }
+                                    },
+                                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                 )
                             }
                         }

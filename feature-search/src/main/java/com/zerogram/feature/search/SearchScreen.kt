@@ -135,49 +135,58 @@ fun SearchScreen(
                                 AppDropdownMenu(
                                     expanded = showSortMenu,
                                     onDismissRequest = { showSortMenu = false },
-                                    modifier = Modifier.width(200.dp),
+                                    modifier = Modifier.width(220.dp),
                                     shape = MaterialTheme.shapes.medium,
                                     containerColor = SurfaceColor
                                 ) {
                                     AppDropdownMenuItem(
-                                        text = { Text("Newest first", color = TextPrimary, fontSize = 16.sp) },
+                                        text = { Text("Newest first", color = TextPrimary, fontSize = 18.sp) },
                                         onClick = { 
                                             showSortMenu = false
                                             viewModel.setSortOrder(com.zerogram.core.ui.components.SortOrder.NEWEST_FIRST)
                                         },
-                                        trailingIcon = if (sortOrder == com.zerogram.core.ui.components.SortOrder.NEWEST_FIRST) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = PrimaryBlue) } } else null
+                                        trailingIcon = if (sortOrder == com.zerogram.core.ui.components.SortOrder.NEWEST_FIRST) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = PrimaryBlue) } } else null,
+                                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                     )
+                                    HorizontalDivider(color = DividerColor, thickness = 1.dp)
                                     AppDropdownMenuItem(
-                                        text = { Text("Name A-Z", color = TextPrimary, fontSize = 16.sp) },
+                                        text = { Text("Name A-Z", color = TextPrimary, fontSize = 18.sp) },
                                         onClick = { 
                                             showSortMenu = false
                                             viewModel.setSortOrder(com.zerogram.core.ui.components.SortOrder.NAME_A_Z)
                                         },
-                                        trailingIcon = if (sortOrder == com.zerogram.core.ui.components.SortOrder.NAME_A_Z) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = PrimaryBlue) } } else null
+                                        trailingIcon = if (sortOrder == com.zerogram.core.ui.components.SortOrder.NAME_A_Z) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = PrimaryBlue) } } else null,
+                                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                     )
+                                    HorizontalDivider(color = DividerColor, thickness = 1.dp)
                                     AppDropdownMenuItem(
-                                        text = { Text("Name Z-A", color = TextPrimary, fontSize = 16.sp) },
+                                        text = { Text("Name Z-A", color = TextPrimary, fontSize = 18.sp) },
                                         onClick = { 
                                             showSortMenu = false
                                             viewModel.setSortOrder(com.zerogram.core.ui.components.SortOrder.NAME_Z_A)
                                         },
-                                        trailingIcon = if (sortOrder == com.zerogram.core.ui.components.SortOrder.NAME_Z_A) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = PrimaryBlue) } } else null
+                                        trailingIcon = if (sortOrder == com.zerogram.core.ui.components.SortOrder.NAME_Z_A) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = PrimaryBlue) } } else null,
+                                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                     )
+                                    HorizontalDivider(color = DividerColor, thickness = 1.dp)
                                     AppDropdownMenuItem(
-                                        text = { Text("Largest first", color = TextPrimary, fontSize = 16.sp) },
+                                        text = { Text("Largest first", color = TextPrimary, fontSize = 18.sp) },
                                         onClick = { 
                                             showSortMenu = false
                                             viewModel.setSortOrder(com.zerogram.core.ui.components.SortOrder.LARGEST_FIRST)
                                         },
-                                        trailingIcon = if (sortOrder == com.zerogram.core.ui.components.SortOrder.LARGEST_FIRST) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = PrimaryBlue) } } else null
+                                        trailingIcon = if (sortOrder == com.zerogram.core.ui.components.SortOrder.LARGEST_FIRST) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = PrimaryBlue) } } else null,
+                                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                     )
+                                    HorizontalDivider(color = DividerColor, thickness = 1.dp)
                                     AppDropdownMenuItem(
-                                        text = { Text("Smallest first", color = TextPrimary, fontSize = 16.sp) },
+                                        text = { Text("Smallest first", color = TextPrimary, fontSize = 18.sp) },
                                         onClick = { 
                                             showSortMenu = false
                                             viewModel.setSortOrder(com.zerogram.core.ui.components.SortOrder.SMALLEST_FIRST)
                                         },
-                                        trailingIcon = if (sortOrder == com.zerogram.core.ui.components.SortOrder.SMALLEST_FIRST) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = PrimaryBlue) } } else null
+                                        trailingIcon = if (sortOrder == com.zerogram.core.ui.components.SortOrder.SMALLEST_FIRST) { @androidx.compose.runtime.Composable { Icon(Icons.Default.Check, contentDescription = null, tint = PrimaryBlue) } } else null,
+                                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                                     )
                                 }
                             }
@@ -225,7 +234,7 @@ fun SearchScreen(
                             AppDropdownMenu(
                                 expanded = showMoreMenu,
                                 onDismissRequest = { showMoreMenu = false },
-                                modifier = Modifier.width(160.dp),
+                                modifier = Modifier.width(220.dp),
                                 shape = MaterialTheme.shapes.medium,
                                 containerColor = SurfaceColor
                             ) {

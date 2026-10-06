@@ -68,7 +68,7 @@ class FolderUploadViewModel @Inject constructor(
 
         val realPath = com.zerogram.util.UriUtils.getPath(context, uri)
         if (realPath == null) {
-            _uiState.value = FolderUploadState.Error("Could not resolve folder path.")
+            _uiState.value = FolderUploadState.Error("Could not resolve folder path. Please select the folder from Internal Storage instead of Shortcuts.")
             return
         }
 
@@ -83,7 +83,7 @@ class FolderUploadViewModel @Inject constructor(
             } catch (e: CancellationException) {
                 _uiState.value = FolderUploadState.Idle
             } catch (e: Exception) {
-                _uiState.value = FolderUploadState.Error("Scan failed: ${e.message}")
+                _uiState.value = FolderUploadState.Error("Scan failed: ${e.message} Please select from Internal Storage instead of Shortcuts.")
             }
         }
     }
