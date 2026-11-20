@@ -405,8 +405,10 @@ class TDLibClient @Inject constructor(
                     if (update.file.id == fileId) {
                         val local = update.file.local
                         if (local.isDownloadingCompleted) {
-                            trySend(DownloadEvent.Completed(local.path))
-                            close()
+                            if (local.path.isNotEmpty() && File(local.path).exists()) {
+                                trySend(DownloadEvent.Completed(local.path))
+                                close()
+                            }
                         } else if (local.isDownloadingActive) {
                             val now = System.currentTimeMillis()
                             if (now - lastEmitTime >= 300) {
@@ -424,9 +426,16 @@ class TDLibClient @Inject constructor(
         // immediately instead of waiting on a DownloadFile round trip that may never signal it.
         val precheck = client.sendSuspend<TdApi.File>(TdApi.GetFile(fileId))
         if (precheck is AppResult.Success && precheck.data.local.isDownloadingCompleted) {
-            trySend(DownloadEvent.Completed(precheck.data.local.path))
-            close()
-            return@callbackFlow
+            val localPath = precheck.data.local.path
+            if (localPath.isNotEmpty() && File(localPath).exists()) {
+                trySend(DownloadEvent.Completed(localPath))
+                close()
+                return@callbackFlow
+            } else {
+                // TDLib remembers a local file (e.g. from an upload or deleted cache),
+                // but it was deleted on disk. Evict TDLib's local reference so it actually downloads fresh.
+                client.sendSuspend<TdApi.Ok>(TdApi.DeleteFile(fileId))
+            }
         }
 
         val request = TdApi.DownloadFile().apply {
@@ -452,8 +461,11 @@ class TDLibClient @Inject constructor(
                 }
                 is TdApi.File -> {
                     if (result.local.isDownloadingCompleted) {
-                        trySend(DownloadEvent.Completed(result.local.path))
-                        close()
+                        val localPath = result.local.path
+                        if (localPath.isNotEmpty() && File(localPath).exists()) {
+                            trySend(DownloadEvent.Completed(localPath))
+                            close()
+                        }
                     }
                 }
             }
@@ -498,8 +510,8 @@ class TDLibClient @Inject constructor(
         val result = client.sendSuspend<TdApi.File>(request)
         if (result is AppResult.Success) {
             val local = result.data.local
-            if (local.isDownloadingCompleted) {
-                return local.path.takeIf { it.isNotEmpty() }
+            if (local.isDownloadingCompleted && local.path.isNotEmpty() && File(local.path).exists()) {
+                return local.path
             }
         }
         return null

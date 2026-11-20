@@ -14,16 +14,20 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.zerogram.domain.repository.IVaultManager
 import javax.inject.Inject
 
 @HiltViewModel
 class RecentlyDeletedViewModel @Inject constructor(
-    private val database: ZerogramDatabase
+    private val database: ZerogramDatabase,
+    private val vaultManager: IVaultManager
 ) : ViewModel() {
 
-    private val THIRTY_DAYS_MS = 30L * 24 * 60 * 60 * 1000
+    private val _isLoading = kotlinx.coroutines.flow.MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private val _searchQuery = kotlinx.coroutines.flow.MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
@@ -37,47 +41,34 @@ class RecentlyDeletedViewModel @Inject constructor(
         _searchQuery,
         _sortOrder
     ) { folders, files, query, sort ->
-        val currentTime = System.currentTimeMillis()
+        _isLoading.value = false
         val items = mutableListOf<AppListItem>()
-
-        val foldersToDelete = mutableListOf<String>()
-        val filesToDelete = mutableListOf<String>()
         val dateFormat = java.text.SimpleDateFormat("d MMMM", java.util.Locale.getDefault())
 
         folders.forEach { folder ->
-            val deletedAt = folder.deletedAt ?: 0L
-            if (currentTime - deletedAt > THIRTY_DAYS_MS) {
-                foldersToDelete.add(folder.id)
-            } else {
-                val sizeText = if (folder.itemCount == 1) "1 item" else "${folder.itemCount} items"
-                items.add(
-                    AppListItem.Folder(
-                        id = folder.id,
-                        name = folder.name,
-                        dateText = dateFormat.format(java.util.Date(folder.createdAt)),
-                        extraInfo = sizeText,
-                        iconRes = com.zerogram.core.ui.R.drawable.ic_file_folder_icon
-                    )
+            val sizeText = if (folder.itemCount == 1) "1 item" else "${folder.itemCount} items"
+            items.add(
+                AppListItem.Folder(
+                    id = folder.id,
+                    name = folder.name,
+                    dateText = dateFormat.format(java.util.Date(folder.createdAt)),
+                    extraInfo = sizeText,
+                    iconRes = com.zerogram.core.ui.R.drawable.ic_file_folder_icon
                 )
-            }
+            )
         }
 
         files.forEach { file ->
-            val deletedAt = file.deletedAt ?: 0L
-            if (currentTime - deletedAt > THIRTY_DAYS_MS) {
-                filesToDelete.add(file.id)
-            } else {
-                items.add(
-                    AppListItem.File(
-                        id = file.id,
-                        name = file.displayName,
-                        dateText = dateFormat.format(java.util.Date(file.createdAt)),
-                        sizeText = com.zerogram.util.FormatUtils.formatSize(file.sizeBytes),
-                        iconRes = getIconForMimeType(file.mimeType),
-                        sizeBytes = file.sizeBytes
-                    )
+            items.add(
+                AppListItem.File(
+                    id = file.id,
+                    name = file.displayName,
+                    dateText = dateFormat.format(java.util.Date(file.createdAt)),
+                    sizeText = com.zerogram.util.FormatUtils.formatSize(file.sizeBytes),
+                    iconRes = getIconForMimeType(file.mimeType),
+                    sizeBytes = file.sizeBytes
                 )
-            }
+            )
         }
 
         var result = items.filter { (if (it is AppListItem.Folder) it.name else (it as AppListItem.File).name).contains(query, ignoreCase = true) }
@@ -145,6 +136,7 @@ class RecentlyDeletedViewModel @Inject constructor(
             if (filesToRecover.isNotEmpty()) database.fileDao().recoverFiles(filesToRecover)
 
             clearSelection()
+            vaultManager.syncDatabase()
         }
     }
 
@@ -160,6 +152,7 @@ class RecentlyDeletedViewModel @Inject constructor(
             if (filesToDelete.isNotEmpty()) database.fileDao().deleteFilesPermanently(filesToDelete)
 
             clearSelection()
+            vaultManager.syncDatabase()
         }
     }
 
@@ -186,6 +179,7 @@ class RecentlyDeletedViewModel @Inject constructor(
             if (files.isNotEmpty()) {
                 database.fileDao().deleteFilesPermanently(files.map { it.id })
             }
+            vaultManager.syncDatabase()
         }
     }
 

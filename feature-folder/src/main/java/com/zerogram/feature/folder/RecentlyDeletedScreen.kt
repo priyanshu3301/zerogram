@@ -44,6 +44,7 @@ fun RecentlyDeletedScreen(
     viewModel: RecentlyDeletedViewModel = hiltViewModel()
 ) {
     val deletedItems by viewModel.deletedItems.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val selectedItems by viewModel.selectedItems.collectAsStateWithLifecycle()
     var isSelectionMode by remember { mutableStateOf(false) }
     var isSearching by remember { mutableStateOf(false) }
@@ -337,7 +338,14 @@ fun RecentlyDeletedScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            if (deletedItems.isEmpty()) {
+            if (isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Color(0xFF64B5F6))
+                }
+            } else if (deletedItems.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center

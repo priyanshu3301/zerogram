@@ -33,12 +33,14 @@ import javax.inject.Inject
 import com.zerogram.core.ui.R
 import com.zerogram.core.ui.utils.FileOpener
 import com.zerogram.util.FormatUtils
+import com.zerogram.domain.repository.IVaultManager
 import kotlinx.coroutines.Dispatchers
 
 @HiltViewModel
 class CategoryViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val database: ZerogramDatabase
+    private val database: ZerogramDatabase,
+    private val vaultManager: IVaultManager
 ) : ViewModel() {
 
     private val _categoryName = MutableStateFlow<String>("")
@@ -138,6 +140,7 @@ class CategoryViewModel @Inject constructor(
                 database.fileDao().moveFilesToTrash(selectedIds, timestamp)
                 _selectedItems.value = emptySet()
                 _uiEvents.emit("Moved ${selectedIds.size} items to Recently Deleted")
+                vaultManager.syncDatabase()
             } catch (e: Exception) {
                 _uiEvents.emit("Error moving to trash: ${e.message}")
             }
@@ -153,6 +156,7 @@ class CategoryViewModel @Inject constructor(
                 if (action == "move") {
                     database.fileDao().moveFiles(selectedIds, targetFolderId)
                     _uiEvents.emit("Moved ${selectedIds.size} items successfully")
+                    vaultManager.syncDatabase()
                 } else if (action == "copy") {
                     var count = 0
                     for (id in selectedIds) {
@@ -168,6 +172,7 @@ class CategoryViewModel @Inject constructor(
                         }
                     }
                     _uiEvents.emit("Copied $count items successfully")
+                    vaultManager.syncDatabase()
                 }
             } catch (e: Exception) {
                 _uiEvents.emit("Action failed: ${e.message}")

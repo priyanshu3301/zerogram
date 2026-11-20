@@ -20,11 +20,14 @@ import javax.inject.Inject
 
 
 
+import com.zerogram.domain.repository.IVaultManager
+
 @OptIn(ExperimentalCoroutinesApi::class, kotlinx.coroutines.FlowPreview::class)
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val database: ZerogramDatabase
+    private val database: ZerogramDatabase,
+    private val vaultManager: IVaultManager
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
@@ -194,6 +197,7 @@ class SearchViewModel @Inject constructor(
                 database.folderDao().moveFoldersToTrash(selectedIds, timestamp)
                 _selectedItems.value = emptySet()
                 _uiEvents.emit("Moved ${selectedIds.size} items to Recently Deleted")
+                vaultManager.syncDatabase()
             } catch (e: Exception) {
                 _uiEvents.emit("Error moving to trash: ${e.message}")
             }

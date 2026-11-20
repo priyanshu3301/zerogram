@@ -338,11 +338,13 @@ class FolderViewModel @Inject constructor(
             val file = database.fileDao().getFileById(itemId)
             if (file != null) {
                 database.fileDao().updateFile(file.copy(displayName = newName, updatedAt = System.currentTimeMillis()))
+                vaultManager.syncDatabase()
                 return@launch
             }
             val folder = database.folderDao().getFolderById(itemId)
             if (folder != null) {
                 database.folderDao().updateFolder(folder.copy(name = newName, updatedAt = System.currentTimeMillis()))
+                vaultManager.syncDatabase()
                 return@launch
             }
         }
@@ -363,6 +365,7 @@ class FolderViewModel @Inject constructor(
                     database.fileDao().moveFiles(selectedIds, targetFolderId)
                     database.folderDao().moveFolders(selectedIds, targetFolderId)
                     _uiEvents.emit("Moved ${selectedIds.size} items successfully")
+                    vaultManager.syncDatabase()
                 } else if (action == "copy") {
                     if (targetFolderId in selectedIds) {
                         _uiEvents.emit("Cannot copy a folder into itself.")
@@ -387,6 +390,7 @@ class FolderViewModel @Inject constructor(
                         }
                     }
                     _uiEvents.emit("Copied $count items successfully")
+                    vaultManager.syncDatabase()
                 }
             } catch (e: Exception) {
                 _uiEvents.emit("Action failed: ${e.message}")
@@ -438,6 +442,7 @@ class FolderViewModel @Inject constructor(
             )
             database.folderDao().insertFolder(folderEntity)
             _uiEvents.emit("Folder '$folderName' created")
+            vaultManager.syncDatabase()
         }
     }
 
@@ -471,6 +476,7 @@ class FolderViewModel @Inject constructor(
 
                 _selectedItems.value = emptySet()
                 _uiEvents.emit("Moved ${selectedIds.size} items to Recently Deleted")
+                vaultManager.syncDatabase()
             } catch (e: Exception) {
                 _uiEvents.emit("Error moving to trash: ${e.message}")
             }

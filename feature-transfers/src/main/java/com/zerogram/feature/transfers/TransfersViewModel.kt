@@ -17,13 +17,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import javax.inject.Inject
+import com.zerogram.domain.repository.IVaultManager
 import java.io.File
 
 @HiltViewModel
 class TransfersViewModel @Inject constructor(
     private val context: android.app.Application,
     private val database: ZerogramDatabase,
-    private val telegramRepository: ITelegramRepository
+    private val telegramRepository: ITelegramRepository,
+    private val vaultManager: IVaultManager
 ) : ViewModel() {
 
     private val _uiEvents = MutableSharedFlow<String>()
@@ -174,6 +176,9 @@ class TransfersViewModel @Inject constructor(
                 }
             }
             if (filesDeleted > 0) {
+                if (deleteFromVault) {
+                    vaultManager.syncDatabase()
+                }
                 _uiEvents.emit("Removed ${jobIds.size} items and deleted $filesDeleted files.")
             } else {
                 _uiEvents.emit("Removed ${jobIds.size} items.")
