@@ -4,6 +4,9 @@ import android.app.DownloadManager
 import android.content.Intent
 import android.os.Environment
 import android.widget.Toast
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
@@ -44,6 +47,8 @@ private val SurfaceColor = Color(0xFF1E1E1E)
 private val TextPrimary = Color(0xFFFFFFFF)
 private val TextSecondary = Color(0xFFA0A0A0)
 private val PrimaryBlue = Color(0xFF2B65F6)
+private val LightBlue = Color(0xFF64B5F6)
+private val ProgressTrackColor = Color(0xFF333333)
 private val SuccessGreen = Color(0xFF22C55E)
 private val ErrorRed = Color(0xFFEF4444)
 private val SuccessGreenBg = Color(0xFF1B3320)
@@ -466,16 +471,29 @@ fun TransferJobItem(
             
             if (job.status == "uploading" || job.status == "downloading" || job.status == "paused" || job.status == "queued") {
                 Spacer(modifier = Modifier.height(8.dp))
-                val progress = if (job.totalBytes > 0) job.progressBytes.toFloat() / job.totalBytes else 0f
-                LinearProgressIndicator(
-                    progress = { progress },
+                val rawProgress = if (job.totalBytes > 0) (job.progressBytes.toFloat() / job.totalBytes).coerceIn(0f, 1f) else 0f
+                val animatedProgress by animateFloatAsState(
+                    targetValue = rawProgress,
+                    animationSpec = tween(durationMillis = 200, easing = LinearOutSlowInEasing),
+                    label = "transfer_progress"
+                )
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(4.dp)
-                        .clip(MaterialTheme.shapes.medium),
-                    color = PrimaryBlue,
-                    trackColor = SurfaceColor
-                )
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(ProgressTrackColor)
+                ) {
+                    if (animatedProgress > 0f) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(animatedProgress)
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(LightBlue)
+                        )
+                    }
+                }
             }
         }
         
