@@ -30,6 +30,9 @@ class VaultSelectionViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<VaultSelectionState>(VaultSelectionState.Loading)
     val uiState: StateFlow<VaultSelectionState> = _uiState.asStateFlow()
 
+    private val _currentVaultChatId = MutableStateFlow<Long?>(null)
+    val currentVaultChatId: StateFlow<Long?> = _currentVaultChatId.asStateFlow()
+
     private val _actionState = MutableStateFlow<VaultActionState>(VaultActionState.Idle)
     val actionState: StateFlow<VaultActionState> = _actionState.asStateFlow()
 
@@ -39,6 +42,7 @@ class VaultSelectionViewModel @Inject constructor(
 
     fun loadChannels() {
         viewModelScope.launch {
+            _currentVaultChatId.value = vaultManager.getActiveVaultChatId()
             _uiState.value = VaultSelectionState.Loading
             when (val result = telegramRepository.getOwnedChannels()) {
                 is AppResult.Success -> {

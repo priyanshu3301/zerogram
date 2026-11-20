@@ -195,12 +195,12 @@ class TDLibClient @Inject constructor(
 
     // --- Channel management ---
 
-    override suspend fun getOwnedChannels(): AppResult<List<TelegramChannel>> {
+    override suspend fun getOwnedChannels(): AppResult<List<TelegramChannel>> = withContext(Dispatchers.IO) {
         val getChats = TdApi.GetChats().apply {
             chatList = TdApi.ChatListMain()
             limit = 100
         }
-        return client.sendSuspend<TdApi.Chats>(getChats).map { chats ->
+        return@withContext client.sendSuspend<TdApi.Chats>(getChats).map { chats ->
             val ownedChannels = mutableListOf<TelegramChannel>()
             for (chatId in chats.chatIds) {
                 val chatResult = client.sendSuspend<TdApi.Chat>(TdApi.GetChat().apply { this.chatId = chatId })
@@ -210,7 +210,23 @@ class TDLibClient @Inject constructor(
                     if (type is TdApi.ChatTypeSupergroup) {
                         val supergroupResult = client.sendSuspend<TdApi.Supergroup>(TdApi.GetSupergroup().apply { supergroupId = type.supergroupId })
                         if (supergroupResult is AppResult.Success && supergroupResult.data.status is TdApi.ChatMemberStatusCreator) {
-                            ownedChannels.add(TelegramChannel(chat.id, chat.title, 0))
+                            var photoPath: String? = null
+                            val small = chat.photo?.small
+                            if (small != null) {
+                                if (small.local.isDownloadingCompleted && small.local.path.isNotEmpty() && File(small.local.path).exists()) {
+                                    photoPath = small.local.path
+                                } else {
+                                    try {
+                                        val dlRes = kotlinx.coroutines.withTimeoutOrNull(2500L) {
+                                            client.sendSuspend<TdApi.File>(TdApi.DownloadFile(small.id, 1, 0, 0, true))
+                                        }
+                                        if (dlRes is AppResult.Success && dlRes.data.local.isDownloadingCompleted && File(dlRes.data.local.path).exists()) {
+                                            photoPath = dlRes.data.local.path
+                                        }
+                                    } catch (ignored: Exception) {}
+                                }
+                            }
+                            ownedChannels.add(TelegramChannel(chat.id, chat.title, supergroupResult.data.memberCount, photoPath))
                         }
                     }
                 }

@@ -139,7 +139,8 @@ data class TelegramUser(
 data class TelegramChannel(
     val chatId: Long,
     val title: String,
-    val memberCount: Int
+    val memberCount: Int,
+    val photoPath: String? = null
 )
 
 enum class TelegramConnectionState {

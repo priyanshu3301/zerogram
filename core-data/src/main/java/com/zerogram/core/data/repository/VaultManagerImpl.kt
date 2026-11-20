@@ -38,6 +38,9 @@ class VaultManagerImpl @Inject constructor(
         if (activeKey != null) {
             return@withContext database.vaultConfigDao().getVaultConfig()?.storageChatId
         }
+        if (credentialsManager.getVaultKey() != null) {
+            return@withContext database.vaultConfigDao().getVaultConfig()?.storageChatId
+        }
         return@withContext null
     }
 

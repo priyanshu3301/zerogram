@@ -6,8 +6,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.text.style.TextOverflow
+import com.zerogram.core.ui.components.TelegramChannelAvatar
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,6 +55,7 @@ fun VaultSelectionScreen(
     viewModel: VaultSelectionViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val currentVaultChatId by viewModel.currentVaultChatId.collectAsState()
     val listState = rememberLazyListState()
     val isScrollingUp = listState.isScrollingUp()
     val fabScale by animateFloatAsState(
@@ -89,8 +96,9 @@ fun VaultSelectionScreen(
         topBar = {
             TopAppBar(
                 title = { 
+                    val screenTitle = if (currentVaultChatId != null) "Switch Vault" else "Select Vault"
                     Text(
-                        "Select Vault",
+                        screenTitle,
                         fontWeight = FontWeight.Normal, 
                         color = TextPrimary,
                         fontSize = 20.sp
@@ -163,8 +171,13 @@ fun VaultSelectionScreen(
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(bottom = 80.dp)
                         ) {
-                            items(state.channels) { channel ->
-                                ChannelItem(channel = channel, onClick = { viewModel.selectChannel(channel) })
+                            items(state.channels, key = { it.chatId }) { channel ->
+                                val isCurrentVault = channel.chatId == currentVaultChatId
+                                ChannelItem(
+                                    channel = channel,
+                                    isCurrentVault = isCurrentVault,
+                                    onClick = { viewModel.selectChannel(channel) }
+                                )
                             }
                         }
                     }
@@ -185,29 +198,103 @@ fun VaultSelectionScreen(
 }
 
 @Composable
-fun ChannelItem(channel: TelegramChannel, onClick: () -> Unit) {
+fun ChannelItem(
+    channel: TelegramChannel,
+    isCurrentVault: Boolean = false,
+    onClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 6.dp)
             .clickable(onClick = onClick),
-        shape = MaterialTheme.shapes.medium,
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = SurfaceColor),
+        border = if (isCurrentVault) BorderStroke(1.5.dp, PrimaryBlue.copy(alpha = 0.7f)) else null,
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
+                .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Default.Folder, contentDescription = "Vault", tint = PrimaryBlue, modifier = Modifier.size(28.dp))
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                text = channel.title,
-                color = TextPrimary,
-                fontSize = 18.sp
+            // Telegram-style channel profile picture or gradient initials avatar
+            TelegramChannelAvatar(
+                title = channel.title,
+                chatId = channel.chatId,
+                photoPath = channel.photoPath,
+                size = 50.dp
             )
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = channel.title,
+                    color = TextPrimary,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(3.dp))
+                if (isCurrentVault) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .background(PrimaryBlue, CircleShape)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Current Vault",
+                            color = PrimaryBlue,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                } else {
+                    val subtitle = if (channel.memberCount > 1) {
+                        "${channel.memberCount} subscribers"
+                    } else {
+                        "Private Channel"
+                    }
+                    Text(
+                        text = subtitle,
+                        color = TextSecondary,
+                        fontSize = 13.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            if (isCurrentVault) {
+                // Telegram-style checkmark badge indicating active/current vault
+                Box(
+                    modifier = Modifier
+                        .size(26.dp)
+                        .background(PrimaryBlue, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Current Vault",
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            } else {
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = TextSecondary.copy(alpha = 0.4f),
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
     }
 }
